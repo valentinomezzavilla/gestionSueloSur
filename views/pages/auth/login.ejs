@@ -1,0 +1,57 @@
+<div class="row justify-content-center">
+  <div class="col-md-4 col-sm-8">
+    <div class="card shadow-sm" style="border-radius:14px;overflow:hidden">
+
+      <!-- Header naranja -->
+      <div class="p-4 text-white text-center" style="background:#2a2a2e">
+        <div class="brand mb-1">SUELOSUR</div>
+        <small style="color:#888">Sistema de Gestión Integral</small>
+      </div>
+
+      <div class="card-body p-4">
+        <% if (error && error.length > 0) { %>
+          <div class="alert alert-danger py-2 small">❌ <%= error[0] %></div>
+        <% } %>
+
+        <form action="/auth/login" method="POST">
+          <div class="mb-3">
+            <label class="form-label fw-semibold small">Usuario</label>
+            <input
+              type="text"
+              name="usuario"
+              class="form-control"
+              placeholder="nombre de usuario"
+              required
+              autofocus
+              autocomplete="username"
+              style="border-radius:8px"
+            >
+          </div>
+          <div class="mb-4">
+            <label class="form-label fw-semibold small">Contraseña</label>
+            <input
+              type="password"
+              name="password"
+              class="form-control"
+              placeholder="••••••••"
+              required
+              style="border-radius:8px"
+            >
+          </div>
+          <button
+            type="submit"
+            class="btn w-100 text-white fw-semibold btn-primary-custom"
+            style="background:#ff6b35;border:none;border-radius:8px;padding:.7rem"
+          >
+            Ingresar al sistema
+          </button>
+        </form>
+      </div>
+
+      <div class="text-center pb-3">
+        <small style="color:#bbb">VM Software Solutions — 2025</small>
+      </div>
+
+    </div>
+  </div>
+</div>

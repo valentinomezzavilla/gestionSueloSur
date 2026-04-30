@@ -1,0 +1,95 @@
+<nav id="sidebar" class="d-flex flex-column p-3" style="width:240px;background:#2a2a2e;min-height:100vh;position:sticky;top:0">
+
+  <!-- Brand -->
+  <div class="mb-4 pb-3" style="border-bottom:1px solid #3d3d42">
+    <div style="color:#ff6b35;font-weight:800;font-size:1.1rem;letter-spacing:1px">SUELOSUR</div>
+    <small style="color:#888">Sistema de Gestión</small>
+  </div>
+
+  <!-- Usuario -->
+  <div class="mb-3 px-2 py-2 rounded" style="background:#3d3d42">
+    <div style="color:#fff;font-size:.85rem;font-weight:600"><%= user?.nombre %></div>
+    <small style="color:#ff6b35;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px"><%= user?.rol?.replace('_',' ') %></small>
+  </div>
+
+  <!-- Menú según rol -->
+  <ul class="nav nav-pills flex-column gap-1 flex-grow-1">
+
+    <% if (['admin_ventas','dueno'].includes(user?.rol)) { %>
+      <li class="nav-item">
+        <a href="/ventas" class="nav-link text-white sidebar-link <%= typeof titulo !== 'undefined' && titulo === 'Ventas' ? 'active' : '' %>">
+          📋 <span>Ventas</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="/contenedores" class="nav-link text-white sidebar-link <%= typeof titulo !== 'undefined' && titulo === 'Contenedores' ? 'active' : '' %>">
+          📦 <span>Contenedores</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="/stock" class="nav-link text-white sidebar-link <%= typeof titulo !== 'undefined' && titulo === 'Stock' ? 'active' : '' %>">
+          🏗️ <span>Stock</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="/clientes" class="nav-link text-white sidebar-link">
+          👥 <span>Clientes</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="/compras" class="nav-link text-white sidebar-link">
+          🛒 <span>Compras</span>
+        </a>
+      </li>
+    <% } %>
+
+    <% if (['admin_contable','dueno'].includes(user?.rol)) { %>
+      <li class="nav-item mt-2">
+        <small style="color:#666;font-size:.7rem;text-transform:uppercase;padding-left:.5rem">Finanzas</small>
+      </li>
+      <li class="nav-item">
+        <a href="/cobranzas" class="nav-link text-white sidebar-link">
+          💰 <span>Cobranzas</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="/facturacion" class="nav-link text-white sidebar-link">
+          🧾 <span>Facturación</span>
+        </a>
+      </li>
+    <% } %>
+
+    <% if (user?.rol === 'chofer') { %>
+      <li class="nav-item">
+        <a href="/hoja-de-ruta" class="nav-link text-white sidebar-link">
+          🚛 <span>Mi Ruta del Día</span>
+        </a>
+      </li>
+    <% } %>
+
+    <% if (user?.rol === 'dueno') { %>
+      <li class="nav-item mt-2">
+        <small style="color:#666;font-size:.7rem;text-transform:uppercase;padding-left:.5rem">Gerencia</small>
+      </li>
+      <li class="nav-item">
+        <a href="/dashboard" class="nav-link text-white sidebar-link">
+          📊 <span>Dashboard</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="/flota" class="nav-link text-white sidebar-link">
+          🚚 <span>Flota</span>
+        </a>
+      </li>
+    <% } %>
+
+  </ul>
+
+  <!-- Logout -->
+  <div class="mt-3 pt-3" style="border-top:1px solid #3d3d42">
+    <a href="/auth/logout" class="btn btn-sm w-100" style="background:#3d3d42;color:#ff6b35;border:1px solid #ff6b35">
+      Cerrar sesión
+    </a>
+  </div>
+
+</nav>
