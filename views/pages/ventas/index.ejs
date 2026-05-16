@@ -1,0 +1,132 @@
+<%
+  const conteo = { pendiente: 0, despachado: 0, entregado: 0, anulado: 0 }
+  resumen.forEach(r => { if (conteo[r.estado] !== undefined) conteo[r.estado] = r.total })
+%>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h4 class="fw-bold mb-0 text-dark-title">📋 Órdenes de Pedido</h4>
+  <a href="/ventas/nueva" class="btn btn-naranja">+ Nueva OP</a>
+</div>
+
+<!-- Resumen de estados -->
+<div class="row g-2 mb-4">
+  <% [
+    { key:'pendiente',  label:'Pendientes',  clase:'badge-pendiente',   icono:'⏳' },
+    { key:'despachado', label:'Despachadas', clase:'badge-en-transito', icono:'🚛' },
+    { key:'entregado',  label:'Entregadas',  clase:'badge-activo',      icono:'✅' },
+    { key:'anulado',    label:'Anuladas',    clase:'badge-alerta',      icono:'✕'  },
+  ].forEach(s => { %>
+  <div class="col-6 col-md-3">
+    <a href="/ventas?estado=<%= s.key %>" class="text-decoration-none">
+      <div class="card shadow-sm h-100 text-center py-3">
+        <div class="icon-md"><%= s.icono %></div>
+        <div class="fw-bold fs-4"><%= conteo[s.key] %></div>
+        <small class="<%= s.clase %> badge rounded-pill px-2"><%= s.label %></small>
+      </div>
+    </a>
+  </div>
+  <% }) %>
+</div>
+
+<!-- Filtros -->
+<form method="GET" action="/ventas" class="card shadow-sm mb-3">
+  <div class="card-body py-2">
+    <div class="row g-2 align-items-end">
+      <div class="col-md-4">
+        <label class="form-label">Cliente</label>
+        <select name="id_cliente" class="form-select form-select-sm">
+          <option value="">Todos los clientes</option>
+          <% clientes.forEach(c => { %>
+            <option value="<%= c.id %>" <%= filtros.id_cliente === c.id ? 'selected' : '' %>><%= c.nombre %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Estado</label>
+        <select name="estado" class="form-select form-select-sm">
+          <option value="">Todos</option>
+          <option value="pendiente"  <%= filtros.estado === 'pendiente'  ? 'selected' : '' %>>Pendiente</option>
+          <option value="despachado" <%= filtros.estado === 'despachado' ? 'selected' : '' %>>Despachado</option>
+          <option value="entregado"  <%= filtros.estado === 'entregado'  ? 'selected' : '' %>>Entregado</option>
+          <option value="anulado"    <%= filtros.estado === 'anulado'    ? 'selected' : '' %>>Anulado</option>
+        </select>
+      </div>
+      <div class="col-auto">
+        <button type="submit" class="btn btn-sm btn-naranja">Filtrar</button>
+        <a href="/ventas" class="btn btn-sm btn-outline-secondary ms-1">Limpiar</a>
+      </div>
+    </div>
+  </div>
+</form>
+
+<!-- Tabla -->
+<div class="card shadow-sm">
+  <div class="card-body p-0">
+    <% if (!ops.length) { %>
+      <div class="text-center py-5 text-muted">
+        <div class="icon-lg">📋</div>
+        <p class="mt-2">No hay órdenes de pedido con estos filtros.</p>
+        <a href="/ventas/nueva" class="btn btn-naranja btn-sm">Crear primera OP</a>
+      </div>
+    <% } else { %>
+    <table class="table table-hover align-middle mb-0">
+      <thead>
+        <tr>
+          <th>Nro. OP</th>
+          <th>Cliente</th>
+          <th>Tipo</th>
+          <th>Fecha</th>
+          <th class="text-end">Total</th>
+          <th class="text-center">Estado</th>
+          <th class="text-center">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% const badgeMap = { pendiente:'badge-pendiente', despachado:'badge-en-transito', entregado:'badge-activo', anulado:'badge-alerta' }
+           const tipoMap  = { M:'Material', C:'Contenedor', B:'Bobcat' }
+        %>
+        <% ops.forEach(op => { %>
+        <tr>
+          <td class="fw-bold text-orange">OP-<%= String(op.nro_op).padStart(4,'0') %></td>
+          <td><%= op.cliente_nombre %></td>
+          <td><small class="text-muted"><%= tipoMap[op.tipo_op] || op.tipo_op %></small></td>
+          <td><small class="text-muted"><%= op.fecha_emision %></small></td>
+          <td class="text-end fw-semibold">$<%= op.total.toLocaleString('es-AR', { minimumFractionDigits: 2 }) %></td>
+          <td class="text-center">
+            <span class="badge rounded-pill px-3 py-1 <%= badgeMap[op.estado] %>"><%= op.estado %></span>
+          </td>
+          <td class="text-center">
+            <a href="/ventas/<%= op.id %>" class="btn btn-sm btn-outline-secondary">Ver</a>
+          </td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+
+    <!-- Paginación -->
+    <% if (totalPaginas > 1) { %>
+    <div class="d-flex justify-content-between align-items-center px-3 py-2 border-divider">
+      <small class="text-muted">
+        Mostrando <%= (page - 1) * limit + 1 %>–<%= Math.min(page * limit, total) %> de <%= total %> registros
+      </small>
+      <nav>
+        <ul class="pagination pagination-sm pagination-orange mb-0">
+          <li class="page-item <%= page <= 1 ? 'disabled' : '' %>">
+            <a class="page-link" href="?<%= new URLSearchParams({...filtros, page: page - 1}).toString() %>">‹</a>
+          </li>
+          <% for(let i = 1; i <= totalPaginas; i++) { %>
+            <li class="page-item <%= i === page ? 'active' : '' %>">
+              <a class="page-link" href="?<%= new URLSearchParams({...filtros, page: i}).toString() %>"><%= i %></a>
+            </li>
+          <% } %>
+          <li class="page-item <%= page >= totalPaginas ? 'disabled' : '' %>">
+            <a class="page-link" href="?<%= new URLSearchParams({...filtros, page: page + 1}).toString() %>">›</a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+    <% } %>
+
+    <% } %>
+  </div>
+</div>

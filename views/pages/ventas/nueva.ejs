@@ -1,0 +1,201 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="fw-bold mb-0 text-dark-title">📋 Nueva Orden de Pedido</h4>
+  <a href="/ventas" class="btn btn-sm btn-outline-secondary">← Volver</a>
+</div>
+
+<form action="/ventas" method="POST">
+  <div class="row g-4">
+
+    <!-- Encabezado -->
+    <div class="col-md-8">
+      <div class="card shadow-sm">
+        <div class="card-header card-header-light">Datos generales</div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-8">
+              <label class="form-label">Cliente *</label>
+              <select name="id_cliente" class="form-select" required>
+                <option value="">Seleccionar cliente...</option>
+                <% clientes.forEach(c => { %>
+                  <option value="<%= c.id %>"><%= c.nombre %></option>
+                <% }) %>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Tipo de OP</label>
+              <select name="tipo_op" id="selectTipo" class="form-select">
+                <option value="M" selected>Material (áridos)</option>
+                <option value="C">Contenedor</option>
+                <option value="B">Bobcat</option>
+              </select>
+            </div>
+            <div class="col-12">
+              <label class="form-label">Observaciones</label>
+              <textarea name="observaciones" class="form-control" rows="2" placeholder="Notas opcionales..."></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resumen -->
+    <div class="col-md-4">
+      <div class="card shadow-sm h-100 card-accent-orange">
+        <div class="card-body d-flex flex-column justify-content-center text-center">
+          <p class="text-muted small mb-1">Total estimado</p>
+          <h2 class="fw-bold text-orange" id="totalGeneral">$0,00</h2>
+          <small class="text-muted">Se actualiza automáticamente</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detalle MATERIAL / BOBCAT -->
+    <div class="col-12" id="bloqueProductos">
+      <div class="card shadow-sm">
+        <div class="card-header card-header-light d-flex justify-content-between align-items-center">
+          <span class="fw-bold">Productos</span>
+          <button type="button" class="btn btn-sm btn-naranja" id="btnAgregar">+ Agregar producto</button>
+        </div>
+        <div class="card-body p-0">
+          <table class="table align-middle mb-0" id="tablaProductos">
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th class="text-end col-w-140">Cantidad</th>
+                <th class="text-end col-w-160">Precio Unit.</th>
+                <th class="text-end col-w-140">Subtotal</th>
+                <th class="col-w-50"></th>
+              </tr>
+            </thead>
+            <tbody id="filas"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detalle CONTENEDOR -->
+    <div class="col-12 d-none" id="bloqueContenedor">
+      <div class="card shadow-sm">
+        <div class="card-header card-header-light">Datos del alquiler de contenedor</div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label">Contenedor a asignar</label>
+              <select name="id_contenedor" class="form-select">
+                <option value="">— asignar después —</option>
+                <% contenedores.forEach(c => { %>
+                  <option value="<%= c.id %>">N° <%= c.numero_contenedor %></option>
+                <% }) %>
+              </select>
+              <small class="text-muted">Solo se listan los que están en planta.</small>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Zona de entrega *</label>
+              <select name="zona_entrega" class="form-select">
+                <option value="">Seleccionar...</option>
+                <% ['Norte','Sur','Este','Oeste','Centro'].forEach(z => { %>
+                  <option value="<%= z %>"><%= z %></option>
+                <% }) %>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Plazo de alquiler (días)</label>
+              <input type="number" name="plazo_alquiler" class="form-control" min="1" value="5">
+            </div>
+            <div class="col-md-8">
+              <label class="form-label">Domicilio de entrega *</label>
+              <input type="text" name="domicilio_entrega" class="form-control" placeholder="Calle y número">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Precio del alquiler</label>
+              <input type="number" name="precio_alquiler" id="inputPrecioCont"
+                     class="form-control" step="0.01" min="0" placeholder="0.00">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 text-end">
+      <a href="/ventas" class="btn btn-outline-secondary me-2">Cancelar</a>
+      <button type="submit" class="btn btn-naranja px-4">Guardar OP</button>
+    </div>
+  </div>
+</form>
+
+<script>
+  const PRODUCTOS = <%- productosJson %>
+
+  function formatPesos(n) {
+    return '$' + n.toLocaleString('es-AR', { minimumFractionDigits: 2 })
+  }
+
+  function calcularTotales() {
+    const tipo = document.getElementById('selectTipo').value
+    let total = 0
+    if (tipo === 'C') {
+      total = parseFloat(document.getElementById('inputPrecioCont').value) || 0
+    } else {
+      document.querySelectorAll('.fila-producto').forEach(fila => {
+        const cant   = parseFloat(fila.querySelector('.inp-cantidad').value) || 0
+        const precio = parseFloat(fila.querySelector('.inp-precio').value)   || 0
+        const sub    = cant * precio
+        fila.querySelector('.td-subtotal').textContent = formatPesos(sub)
+        total += sub
+      })
+    }
+    document.getElementById('totalGeneral').textContent = formatPesos(total)
+  }
+
+  function agregarFila() {
+    const tbody = document.getElementById('filas')
+    const tr = document.createElement('tr')
+    tr.className = 'fila-producto'
+    tr.innerHTML = `
+      <td>
+        <select name="id_producto[]" class="form-select form-select-sm sel-producto">
+          <option value="">Seleccionar...</option>
+          ${PRODUCTOS.map(p => `<option value="${p.id}" data-precio="${p.precio_referencia}">${p.nombre} (${p.unidad_medida})</option>`).join('')}
+        </select>
+      </td>
+      <td><input type="number" name="cantidad_pedida[]" class="form-control form-control-sm inp-cantidad text-end" step="0.01" min="0" placeholder="0.00"></td>
+      <td><input type="number" name="precio_unitario[]" class="form-control form-control-sm inp-precio text-end" step="0.01" min="0" placeholder="0.00"></td>
+      <td class="text-end fw-semibold td-subtotal">$0,00</td>
+      <td class="text-center"><button type="button" class="btn btn-sm text-danger btn-eliminar" title="Eliminar">✕</button></td>
+    `
+    tr.querySelector('.sel-producto').addEventListener('change', function () {
+      tr.querySelector('.inp-precio').value = this.options[this.selectedIndex].dataset.precio || ''
+      calcularTotales()
+    })
+    tr.querySelector('.inp-cantidad').addEventListener('input', calcularTotales)
+    tr.querySelector('.inp-precio').addEventListener('input', calcularTotales)
+    tr.querySelector('.btn-eliminar').addEventListener('click', () => {
+      if (document.querySelectorAll('.fila-producto').length > 1) {
+        tr.remove(); calcularTotales()
+      }
+    })
+    tbody.appendChild(tr)
+  }
+
+  // Toggle entre Material/Bobcat y Contenedor
+  function actualizarVistaTipo() {
+    const tipo = document.getElementById('selectTipo').value
+    document.getElementById('bloqueProductos').classList.toggle('d-none', tipo === 'C')
+    document.getElementById('bloqueContenedor').classList.toggle('d-none', tipo !== 'C')
+    // Toggle 'required' para no bloquear el submit
+    document.querySelectorAll('#bloqueProductos .inp-cantidad, #bloqueProductos .inp-precio, #bloqueProductos .sel-producto').forEach(el => {
+      el.required = tipo !== 'C'
+    })
+    document.querySelectorAll('#bloqueContenedor [name=domicilio_entrega], #bloqueContenedor [name=zona_entrega]').forEach(el => {
+      el.required = tipo === 'C'
+    })
+    calcularTotales()
+  }
+
+  document.getElementById('btnAgregar').addEventListener('click', agregarFila)
+  document.getElementById('selectTipo').addEventListener('change', actualizarVistaTipo)
+  document.getElementById('inputPrecioCont').addEventListener('input', calcularTotales)
+
+  agregarFila()
+  actualizarVistaTipo()
+</script>

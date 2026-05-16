@@ -4,8 +4,10 @@
   "description": "Sistema de Gestión Integral — Suelosur S.A.S.",
   "main": "server.js",
   "scripts": {
-    "dev": "nodemon server.js",
-    "start": "node server.js"
+    "dev": "concurrently \"nodemon server.js\" \"sass --watch src/scss/main.scss:public/css/main.css\"",
+    "start": "node server.js",
+    "sass": "sass src/scss/main.scss public/css/main.css",
+    "sass:watch": "sass --watch src/scss/main.scss:public/css/main.css"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -19,6 +21,8 @@
     "method-override": "^3.0.0"
   },
   "devDependencies": {
-    "nodemon": "^3.0.2"
+    "concurrently": "^9.1.2",
+    "nodemon": "^3.0.2",
+    "sass": "^1.89.0"
   }
 }

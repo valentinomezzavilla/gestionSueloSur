@@ -1,0 +1,116 @@
+@use 'variables' as *;
+
+// ── Layout principal ───────────────────────────────────────────
+.app-wrapper {
+  display: flex;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex-grow: 1;
+  padding: 1.5rem;
+  background: $light-bg;
+  overflow-y: auto;
+}
+
+// ── Sidebar ────────────────────────────────────────────────────
+.app-sidebar {
+  width: $sidebar-w;
+  background: $dark;
+  min-height: 100vh;
+  position: sticky;
+  top: 0;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-brand {
+  border-bottom: 1px solid $mid;
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+
+  .brand-name {
+    color: $accent;
+    font-weight: 800;
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+  }
+
+  .brand-sub {
+    color: #888;
+  }
+}
+
+.sidebar-user {
+  background: $mid;
+  padding: .5rem .75rem;
+  border-radius: $radius-sm;
+  margin-bottom: 1rem;
+
+  .user-name {
+    color: #fff;
+    font-size: .85rem;
+    font-weight: 600;
+  }
+
+  .user-role {
+    color: $accent;
+    font-size: .75rem;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+  }
+}
+
+.sidebar-section {
+  color: #666;
+  font-size: .7rem;
+  text-transform: uppercase;
+  padding-left: .5rem;
+}
+
+.sidebar-link {
+  border-radius: $radius-sm;
+  padding: .5rem .75rem;
+  transition: background .15s;
+  font-size: .9rem;
+
+  &.is-sub {
+    padding-left: 2rem;
+  }
+
+  &:hover {
+    background: $mid !important;
+  }
+
+  &.active {
+    background: $accent !important;
+    font-weight: 600;
+  }
+}
+
+.sidebar-footer {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid $mid;
+}
+
+// ── Navbar ─────────────────────────────────────────────────────
+.app-navbar {
+  background: #fff;
+  border-bottom: 1px solid #eee;
+  padding: .75rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  .nav-title {
+    color: $dark;
+    margin-bottom: 0;
+    font-weight: 700;
+  }
+
+  .nav-date {
+    color: #888;
+  }
+}

@@ -1,11 +1,11 @@
 <div class="row justify-content-center">
   <div class="col-md-4 col-sm-8">
-    <div class="card shadow-sm" style="border-radius:14px;overflow:hidden">
+    <div class="card shadow-sm login-card">
 
-      <!-- Header naranja -->
-      <div class="p-4 text-white text-center" style="background:#2a2a2e">
-        <div class="brand mb-1">SUELOSUR</div>
-        <small style="color:#888">Sistema de Gestión Integral</small>
+      <!-- Header -->
+      <div class="login-header">
+        <div class="brand-name mb-1">SUELOSUR</div>
+        <small class="sub">Sistema de Gestión Integral</small>
       </div>
 
       <div class="card-body p-4">
@@ -19,12 +19,11 @@
             <input
               type="text"
               name="usuario"
-              class="form-control"
+              class="form-control login-input"
               placeholder="nombre de usuario"
               required
               autofocus
               autocomplete="username"
-              style="border-radius:8px"
             >
           </div>
           <div class="mb-4">
@@ -32,24 +31,43 @@
             <input
               type="password"
               name="password"
-              class="form-control"
+              class="form-control login-input"
               placeholder="••••••••"
               required
-              style="border-radius:8px"
             >
           </div>
-          <button
-            type="submit"
-            class="btn w-100 text-white fw-semibold btn-primary-custom"
-            style="background:#ff6b35;border:none;border-radius:8px;padding:.7rem"
-          >
+          <button type="submit" class="btn w-100 login-submit">
             Ingresar al sistema
           </button>
         </form>
       </div>
 
+      <!-- Credenciales de prueba -->
+      <div class="mx-3 mb-3 p-3 rounded box-credenciales">
+        <p class="fw-bold small mb-2 text-secondary">🔑 Credenciales de prueba <span class="text-muted fw-normal">(contraseña: suelosur123)</span></p>
+        <div class="d-flex flex-column gap-2">
+          <% [
+            { usuario: 'valentino',      rol: 'Dueño'          },
+            { usuario: 'admin_ventas',   rol: 'Admin Ventas'   },
+            { usuario: 'admin_contable', rol: 'Admin Contable' },
+            { usuario: 'chofer',         rol: 'Chofer'         },
+          ].forEach(u => { %>
+          <div class="d-flex justify-content-between align-items-center">
+            <small>
+              <button type="button"
+                      class="btn btn-sm btn-link p-0 fw-semibold text-decoration-none text-orange"
+                      onclick="document.querySelector('[name=usuario]').value='<%= u.usuario %>'; document.querySelector('[name=password]').value='suelosur123'">
+                <%= u.usuario %>
+              </button>
+            </small>
+            <span class="badge badge-rol"><%= u.rol %></span>
+          </div>
+          <% }) %>
+        </div>
+      </div>
+
       <div class="text-center pb-3">
-        <small style="color:#bbb">VM Software Solutions — 2025</small>
+        <small class="login-footer">VM Software Solutions — 2025</small>
       </div>
 
     </div>

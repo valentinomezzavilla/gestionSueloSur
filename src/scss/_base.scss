@@ -1,0 +1,28 @@
+@use 'variables' as *;
+
+:root {
+  --accent:      #{$accent};
+  --accent-dark: #{$accent-dark};
+  --accent-soft: #{$accent-soft};
+  --dark:        #{$dark};
+  --mid:         #{$mid};
+  --sidebar-w:   #{$sidebar-w};
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-size: .95rem;
+  color: $dark;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+
+  &-track { background: #f1f1f1; }
+
+  &-thumb {
+    background: #ccc;
+    border-radius: 3px;
+    &:hover { background: $accent; }
+  }
+}

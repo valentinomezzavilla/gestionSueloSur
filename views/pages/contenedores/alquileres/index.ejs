@@ -1,0 +1,170 @@
+<%
+  const conteo = { pendiente: 0, despachado: 0, entregado: 0, anulado: 0 }
+  resumen.forEach(r => { if (conteo[r.estado] !== undefined) conteo[r.estado] = r.total })
+
+  const badgeOP = {
+    pendiente:  'badge-pendiente',
+    despachado: 'badge-en-transito',
+    entregado:  'badge-activo',
+    anulado:    'badge-alerta',
+  }
+  const labelOP = {
+    pendiente:  'Pendiente',
+    despachado: 'Despachado',
+    entregado:  'Entregado',
+    anulado:    'Anulado',
+  }
+  const badgeCont = {
+    en_planta:   'badge-activo',
+    vaciado:     'badge-pendiente',
+    entregado:   'badge-en-transito',
+    en_alquiler: 'badge-en-transito',
+    a_retirar:   'badge-alerta',
+    en_transito: 'badge-pendiente',
+  }
+  const labelCont = {
+    en_planta:   'En planta',
+    vaciado:     'Vaciado',
+    entregado:   'En domicilio',
+    en_alquiler: 'En alquiler',
+    a_retirar:   'A retirar',
+    en_transito: 'En tránsito',
+  }
+  function semaforoDias(dias, plazo) {
+    if (!plazo || dias == null) return ''
+    if (dias >= plazo)      return 'dias-rojo'
+    if (dias >= plazo - 1)  return 'dias-alerta'
+    return 'dias-ok'
+  }
+%>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h4 class="fw-bold mb-0 text-dark-title">📦 Alquileres de Contenedores</h4>
+  <a href="/contenedores/alquileres/nuevo" class="btn btn-naranja">+ Nuevo Alquiler</a>
+</div>
+
+<!-- Resumen -->
+<div class="row g-2 mb-4">
+  <% [
+    { key: 'pendiente',  label: 'Pendientes', icono: '🕐' },
+    { key: 'despachado', label: 'Despachados', icono: '🚛' },
+    { key: 'entregado',  label: 'En domicilio', icono: '📦' },
+    { key: 'anulado',    label: 'Anulados', icono: '❌' },
+  ].forEach(s => { %>
+  <div class="col-6 col-md-3">
+    <a href="/contenedores/alquileres?estado=<%= s.key %>" class="text-decoration-none">
+      <div class="card shadow-sm h-100 text-center py-2">
+        <div class="icon-sm"><%= s.icono %></div>
+        <div class="fw-bold fs-5"><%= conteo[s.key] %></div>
+        <small class="<%= badgeOP[s.key] %> badge rounded-pill px-2"><%= s.label %></small>
+      </div>
+    </a>
+  </div>
+  <% }) %>
+</div>
+
+<!-- Filtros -->
+<form method="GET" action="/contenedores/alquileres" class="card shadow-sm mb-3">
+  <div class="card-body py-2">
+    <div class="row g-2 align-items-end">
+      <div class="col-md-3">
+        <label class="form-label">Estado</label>
+        <select name="estado" class="form-select form-select-sm">
+          <option value="">Todos</option>
+          <% Object.entries(labelOP).forEach(([k,v]) => { %>
+            <option value="<%= k %>" <%= filtros.estado === k ? 'selected' : '' %>><%= v %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Cliente</label>
+        <select name="id_cliente" class="form-select form-select-sm">
+          <option value="">Todos</option>
+          <% clientes.forEach(c => { %>
+            <option value="<%= c.id %>" <%= filtros.id_cliente === c.id ? 'selected' : '' %>><%= c.nombre %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div class="col-auto">
+        <button type="submit" class="btn btn-sm btn-naranja">Filtrar</button>
+        <a href="/contenedores/alquileres" class="btn btn-sm btn-outline-secondary ms-1">Limpiar</a>
+      </div>
+    </div>
+  </div>
+</form>
+
+<!-- Tabla -->
+<div class="card shadow-sm">
+  <div class="card-body p-0">
+    <% if (!alquileres.length) { %>
+      <div class="text-center py-5 text-muted">
+        <div class="icon-lg">📦</div>
+        <p class="mt-2">No hay alquileres con estos filtros.</p>
+        <a href="/contenedores/alquileres/nuevo" class="btn btn-naranja btn-sm">Crear primer alquiler</a>
+      </div>
+    <% } else { %>
+    <table class="table table-hover align-middle mb-0">
+      <thead>
+        <tr>
+          <th>OP</th>
+          <th>Cliente</th>
+          <th class="text-center">Contenedor</th>
+          <th>Domicilio</th>
+          <th>Zona</th>
+          <th class="text-center">Plazo</th>
+          <th class="text-center">Días</th>
+          <th class="text-center">Estado OP</th>
+          <th class="text-center">Estado Contenedor</th>
+          <th class="text-center">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% alquileres.forEach(a => { %>
+        <tr>
+          <td class="fw-bold text-orange">
+            <a href="/contenedores/alquileres/<%= a.id %>" class="text-decoration-none text-orange">
+              OP-<%= String(a.nro_op).padStart(4,'0') %>
+            </a>
+          </td>
+          <td><%= a.cliente_nombre %></td>
+          <td class="text-center">
+            <% if (a.numero_contenedor) { %>
+              <span class="fw-bold">N° <%= a.numero_contenedor %></span>
+            <% } else { %>
+              <span class="text-muted fst-italic">Sin asignar</span>
+            <% } %>
+          </td>
+          <td><small class="text-muted"><%= a.domicilio_entrega || '—' %></small></td>
+          <td><small class="text-muted"><%= a.zona_entrega || '—' %></small></td>
+          <td class="text-center"><small><%= a.plazo_alquiler %>d</small></td>
+          <td class="text-center">
+            <% if (a.contenedor_estado === 'entregado' || a.contenedor_estado === 'en_alquiler' || a.contenedor_estado === 'a_retirar') { %>
+              <span class="<%= semaforoDias(a.dias_en_estado, a.plazo_alquiler) %> fw-semibold">
+                <%= a.dias_en_estado %> / <%= a.plazo_alquiler %>
+              </span>
+            <% } else { %>
+              <small class="text-muted">—</small>
+            <% } %>
+          </td>
+          <td class="text-center">
+            <span class="badge rounded-pill px-3 <%= badgeOP[a.estado] %>"><%= labelOP[a.estado] %></span>
+          </td>
+          <td class="text-center">
+            <% if (a.contenedor_estado) { %>
+              <span class="badge rounded-pill px-2 <%= badgeCont[a.contenedor_estado] || 'badge-pendiente' %>">
+                <%= labelCont[a.contenedor_estado] || a.contenedor_estado %>
+              </span>
+            <% } else { %>
+              <small class="text-muted">—</small>
+            <% } %>
+          </td>
+          <td class="text-center">
+            <a href="/contenedores/alquileres/<%= a.id %>" class="btn btn-sm btn-outline-secondary">Ver</a>
+          </td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+    <% } %>
+  </div>
+</div>

@@ -15,7 +15,7 @@ app.set('layout', 'layouts/main')
 // Middlewares globales
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
-app.use(methodOverride('_method'))
+app.use(methodOverride((req) => req.query._method || (req.body && req.body._method)))
 app.use(express.static('public'))
 
 // Sesión
@@ -39,32 +39,27 @@ app.use((req, res, next) => {
 })
 
 // ── Rutas ──────────────────────────────────────────────────────
-app.use('/auth', require('./routes/auth.routes'))
+const auth  = require('./middlewares/auth')
+const roles = require('./middlewares/roles')
 
-// Placeholder rutas de módulos (se van agregando sprint a sprint)
-app.get('/dashboard', require('./middlewares/auth'), (req, res) => {
-  res.render('pages/dashboard', { titulo: 'Dashboard' })
-})
+app.use('/auth',         require('./routes/auth.routes'))
+app.use('/ventas',       require('./routes/ventas.routes'))
+app.use('/contenedores', require('./routes/contenedores.routes'))
+app.use('/stock',        require('./routes/stock.routes'))
+app.use('/clientes',     require('./routes/clientes.routes'))
+app.use('/productos',    require('./routes/productos.routes'))
+app.use('/usuarios',     require('./routes/usuarios.routes'))
 
-app.get('/ventas', require('./middlewares/auth'), (req, res) => {
-  res.render('pages/placeholder', { titulo: 'Ventas', icono: '📋' })
-})
+// ── Placeholders (módulos futuros) ─────────────────────────────
+const placeholder = (titulo, icono, sprint) => (req, res) =>
+  res.render('pages/placeholder', { titulo, icono, sprint })
 
-app.get('/contenedores', require('./middlewares/auth'), (req, res) => {
-  res.render('pages/placeholder', { titulo: 'Contenedores', icono: '📦' })
-})
-
-app.get('/stock', require('./middlewares/auth'), (req, res) => {
-  res.render('pages/placeholder', { titulo: 'Stock', icono: '🏗️' })
-})
-
-app.get('/cobranzas', require('./middlewares/auth'), (req, res) => {
-  res.render('pages/placeholder', { titulo: 'Cobranzas', icono: '💰' })
-})
-
-app.get('/hoja-de-ruta', require('./middlewares/auth'), (req, res) => {
-  res.render('pages/placeholder', { titulo: 'Mi Hoja de Ruta', icono: '🚛' })
-})
+app.get('/dashboard',   auth, roles('dueno'),                            placeholder('Dashboard',     '📊', 7))
+app.get('/cobranzas',   auth, roles('admin_contable','dueno'),           placeholder('Cobranzas',     '💰', 4))
+app.get('/compras',     auth, roles('admin_ventas','dueno'),             placeholder('Compras',       '🛒', 5))
+app.get('/facturacion', auth, roles('admin_contable','dueno'),           placeholder('Facturación',   '🧾', 6))
+app.get('/flota',       auth, roles('dueno'),                            placeholder('Flota',         '🚚', 6))
+app.get('/hoja-de-ruta',auth, roles('chofer','admin_ventas','dueno'),    placeholder('Hoja de Ruta',  '🚛', 3))
 
 // Ruta raíz
 app.get('/', (req, res) => {

@@ -1,0 +1,12 @@
+// ═════════════════════════════════════════════════════════════
+// Suelosur — Hoja de estilos principal
+// ═════════════════════════════════════════════════════════════
+// Convención: nada de estilos inline en las vistas.
+// Cualquier estilo nuevo debe vivir en uno de estos partials.
+
+@use 'variables' as *;
+@use 'base';
+@use 'utilities';
+@use 'layout';
+@use 'components';
+@use 'pages';

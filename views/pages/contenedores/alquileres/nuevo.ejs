@@ -1,0 +1,70 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="fw-bold mb-0 text-dark-title">📦 Nuevo Alquiler de Contenedor</h4>
+  <a href="/contenedores/alquileres" class="btn btn-sm btn-outline-secondary">← Volver</a>
+</div>
+
+<div class="card shadow-sm maxw-600">
+  <div class="card-body">
+    <form action="/contenedores/alquileres" method="POST">
+
+      <div class="mb-3">
+        <label class="form-label">Cliente *</label>
+        <select name="id_cliente" class="form-select" required>
+          <option value="">Seleccionar cliente...</option>
+          <% clientes.forEach(c => { %>
+            <option value="<%= c.id %>"><%= c.nombre %></option>
+          <% }) %>
+        </select>
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-md-8">
+          <label class="form-label">Domicilio de entrega *</label>
+          <input type="text" name="domicilio_entrega" class="form-control"
+                 required placeholder="Ej: Av. Colón 1234, Córdoba">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Zona</label>
+          <input type="text" name="zona_entrega" class="form-control"
+                 placeholder="Ej: Norte">
+        </div>
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label class="form-label">Plazo de alquiler (días) *</label>
+          <input type="number" name="plazo_alquiler" class="form-control"
+                 required min="1" value="5" placeholder="5">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Precio de alquiler ($)</label>
+          <input type="number" name="precio_alquiler" class="form-control"
+                 step="0.01" min="0" placeholder="0.00">
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Contenedor a asignar</label>
+        <select name="id_contenedor" class="form-select">
+          <option value="">Sin asignar (asignar después)</option>
+          <% disponibles.forEach(c => { %>
+            <option value="<%= c.id %>">N° <%= c.numero_contenedor %></option>
+          <% }) %>
+        </select>
+        <small class="text-muted">Solo se muestran contenedores operativos en planta.</small>
+      </div>
+
+      <div class="mb-4">
+        <label class="form-label">Observaciones</label>
+        <textarea name="observaciones" class="form-control" rows="2"
+                  placeholder="Notas adicionales..."></textarea>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-naranja px-4">Crear alquiler</button>
+        <a href="/contenedores/alquileres" class="btn btn-outline-secondary">Cancelar</a>
+      </div>
+
+    </form>
+  </div>
+</div>

@@ -1,0 +1,122 @@
+@use 'variables' as *;
+
+// ── Cards ──────────────────────────────────────────────────────
+.card {
+  border: 1px solid #e4e9f2;
+  border-radius: $radius-md;
+}
+
+.card-header-light {
+  background: $light-bg;
+  font-weight: 600;
+}
+
+.card-header-orange {
+  background: $accent-soft;
+  color: $accent;
+  font-weight: 600;
+}
+
+// ── Botones ────────────────────────────────────────────────────
+.btn-naranja {
+  background: $accent;
+  color: #fff;
+  border: none;
+  border-radius: $radius-sm;
+  font-weight: 600;
+
+  &:hover {
+    background: $accent-dark;
+    color: #fff;
+  }
+}
+
+.btn-logout {
+  background: $mid;
+  color: $accent;
+  border: 1px solid $accent;
+}
+
+// ── Tablas ─────────────────────────────────────────────────────
+.table {
+  thead th {
+    background: $dark;
+    color: #fff;
+    font-weight: 600;
+    font-size: .85rem;
+    border: none;
+  }
+
+  tbody tr:hover {
+    background: $accent-soft;
+  }
+
+  tfoot tr.total-row {
+    background: $accent-soft;
+  }
+}
+
+// ── Badges de estado ───────────────────────────────────────────
+%badge-base { font-size: .78rem; }
+
+.badge-pendiente   { @extend %badge-base; background: #fef9e7; color: #b7770d; border: 1px solid #f9ca24; }
+.badge-activo      { @extend %badge-base; background: #eafaf1; color: #1e8449; border: 1px solid #58d68d; }
+.badge-alerta      { @extend %badge-base; background: #fdf0ef; color: #922b21; border: 1px solid $red; }
+.badge-en-transito { @extend %badge-base; background: #eaf4fb; color: #1a5276; border: 1px solid #3498db; }
+
+.badge-rol {
+  background: $accent-soft;
+  color: $accent;
+  border: 1px solid $accent;
+  font-size: .65rem;
+}
+
+.badge-rol-lg {
+  background: $accent;
+}
+
+// ── Formularios ────────────────────────────────────────────────
+.form-control,
+.form-select {
+  &:focus {
+    border-color: $accent;
+    box-shadow: 0 0 0 .2rem rgba($accent, .15);
+  }
+}
+
+.form-label {
+  font-weight: 600;
+  font-size: .85rem;
+  color: #555;
+}
+
+// ── Modales ────────────────────────────────────────────────────
+.modal-header-dark {
+  background: $dark;
+}
+
+// ── Semáforo de días ───────────────────────────────────────────
+.dias-ok     { color: $green;  font-weight: 700; }
+.dias-alerta { color: $yellow; font-weight: 700; }
+.dias-rojo   { color: $red;    font-weight: 700; }
+
+// ── Paginación naranja ─────────────────────────────────────────
+.pagination-orange {
+  --bs-pagination-active-bg: #{$accent};
+  --bs-pagination-active-border-color: #{$accent};
+}
+
+// ── Caja de credenciales (login) ───────────────────────────────
+.box-credenciales {
+  background: $light-bg;
+  border: 1px dashed #ddd;
+}
+
+// ── Separadores ────────────────────────────────────────────────
+.border-divider {
+  border-top: 1px solid #eee;
+}
+
+.border-sidebar {
+  border-color: $mid !important;
+}

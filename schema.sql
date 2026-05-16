@@ -71,3 +71,71 @@ ON CONFLICT DO NOTHING;
 --   INSERT INTO users (usuario, password_hash, nombre, rol)
 --   VALUES ('valentino', '<hash>', 'Valentino', 'dueno');
 -- ───────────────────────────────────────────────────────────
+
+
+-- ═══════════════════════════════════════════════════════════
+-- SCHEMA SPRINT 1 — Ventas (OP) + Stock + Remitos
+-- ═══════════════════════════════════════════════════════════
+
+-- 4. Flota de vehículos
+CREATE TABLE IF NOT EXISTS flota_vehiculos (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tipo_vehiculo VARCHAR(10)  NOT NULL CHECK (tipo_vehiculo IN ('camion','bobcat')),
+  patente       VARCHAR(20)  NOT NULL,
+  nombre        VARCHAR(80)  NOT NULL,
+  kilometraje   INTEGER      DEFAULT 0,
+  activo        BOOLEAN      DEFAULT true,
+  created_at    TIMESTAMPTZ  DEFAULT NOW()
+);
+
+-- 5. Órdenes de Pedido — encabezado
+CREATE TABLE IF NOT EXISTS op_encabezado (
+  id                UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  id_cliente        UUID        NOT NULL REFERENCES clientes(id),
+  id_administrativo UUID        NOT NULL REFERENCES users(id),
+  fecha_emision     DATE        NOT NULL DEFAULT CURRENT_DATE,
+  tipo_op           CHAR(1)     NOT NULL DEFAULT 'M' CHECK (tipo_op IN ('M','C','B')),
+  nro_op            INTEGER     NOT NULL,
+  estado            VARCHAR(15) NOT NULL DEFAULT 'pendiente'
+                      CHECK (estado IN ('pendiente','despachado','entregado','anulado')),
+  observaciones     TEXT        DEFAULT '',
+  created_at        TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 6. Órdenes de Pedido — detalle de materiales
+CREATE TABLE IF NOT EXISTS op_detalle_material (
+  id              UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+  id_orden_pedido UUID         NOT NULL REFERENCES op_encabezado(id),
+  id_producto     UUID         NOT NULL REFERENCES productos(id),
+  cantidad_pedida DECIMAL(12,2) NOT NULL,
+  precio_unitario DECIMAL(12,2) NOT NULL
+);
+
+-- 7. Stock de áridos
+CREATE TABLE IF NOT EXISTS stock (
+  id                      UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+  id_producto             UUID         NOT NULL UNIQUE REFERENCES productos(id),
+  cantidad_actual         DECIMAL(12,2) DEFAULT 0,
+  cant_pendiente_entregar DECIMAL(12,2) DEFAULT 0,
+  stock_minimo            DECIMAL(12,2) DEFAULT 0
+);
+
+-- ───────────────────────────────────────────────────────────
+-- Inicializar stock: una fila por producto
+-- ───────────────────────────────────────────────────────────
+INSERT INTO stock (id_producto)
+SELECT id FROM productos
+WHERE NOT EXISTS (SELECT 1 FROM stock s WHERE s.id_producto = productos.id)
+ON CONFLICT DO NOTHING;
+
+-- ───────────────────────────────────────────────────────────
+-- Flota inicial (5 camiones + 1 Bobcat)
+-- ───────────────────────────────────────────────────────────
+INSERT INTO flota_vehiculos (tipo_vehiculo, patente, nombre) VALUES
+  ('camion', 'ABC123', 'Camión 1'),
+  ('camion', 'DEF456', 'Camión 2'),
+  ('camion', 'GHI789', 'Camión 3'),
+  ('camion', 'JKL012', 'Camión 4'),
+  ('camion', 'MNO345', 'Camión 5'),
+  ('bobcat', 'PQR678', 'Bobcat')
+ON CONFLICT DO NOTHING;

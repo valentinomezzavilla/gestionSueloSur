@@ -1,0 +1,48 @@
+@use 'variables' as *;
+
+// ── Tipografía ────────────────────────────────────────────────
+.text-orange      { color: $accent !important; }
+.text-orange-dark { color: $accent-dark !important; }
+.text-dark-title  { color: $dark !important; }
+.text-green       { color: $green !important; }
+.text-blue        { color: $blue !important; }
+.text-muted-soft  { color: #888 !important; }
+.text-muted-light { color: #bbb !important; }
+
+// ── Fondos ────────────────────────────────────────────────────
+.bg-dark-custom   { background: $dark !important; }
+.bg-mid           { background: $mid !important; }
+.bg-light-soft    { background: $light-bg !important; }
+.bg-orange        { background: $accent !important; }
+.bg-orange-soft   { background: $accent-soft !important; }
+
+// ── Iconos grandes (decorativos) ─────────────────────────────
+.icon-sm  { font-size: 1.2rem; }
+.icon-md  { font-size: 1.4rem; }
+.icon-lg  { font-size: 2.5rem; }
+.icon-xl  { font-size: 3rem; }
+.icon-xxl { font-size: 4rem; }
+
+// ── Bordes redondeados ───────────────────────────────────────
+.rounded-8  { border-radius: $radius-sm !important; }
+.rounded-10 { border-radius: $radius-md !important; }
+.rounded-14 { border-radius: $radius-lg !important; }
+
+// ── Acento lateral en cards ──────────────────────────────────
+.card-accent-orange { border-left: 4px solid $accent; }
+.card-accent-green  { border-left: 4px solid $green; }
+.card-accent-blue   { border-left: 4px solid $blue; }
+
+// ── Anchos fijos de columna (tablas) ─────────────────────────
+.col-w-50  { width: 50px; }
+.col-w-140 { width: 140px; }
+.col-w-160 { width: 160px; }
+
+// ── Altura mínima ────────────────────────────────────────────
+.min-vh-100 { min-height: 100vh; }
+.min-vh-60  { min-height: 60vh; }
+
+// ── Anchos máximos (formularios estrechos) ───────────────────
+.maxw-480 { max-width: 480px; }
+.maxw-500 { max-width: 500px; }
+.maxw-600 { max-width: 600px; }
