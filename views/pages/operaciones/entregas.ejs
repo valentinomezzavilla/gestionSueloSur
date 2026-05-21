@@ -1,0 +1,77 @@
+<%
+  const badgeMap = {
+    pendiente:  'badge-pendiente',
+    despachado: 'badge-en-transito',
+    entregado:  'badge-activo',
+    anulado:    'badge-alerta',
+  }
+  const tipoLabel = { M: '🏗️ Áridos', B: '🚜 Bobcat' }
+
+  function tablaOps(lista) {
+    if (!lista.length) return '<div class="text-center py-3 text-muted"><small>Sin operaciones para este período.</small></div>'
+    return `
+    <table class="table table-hover align-middle mb-0">
+      <thead>
+        <tr>
+          <th>OP</th>
+          <th>Tipo</th>
+          <th>Cliente</th>
+          <th>Domicilio</th>
+          <th>Materiales</th>
+          <th class="text-center">Estado</th>
+          <th class="text-center"></th>
+        </tr>
+      </thead>
+      <tbody>
+        ${lista.map(op => `
+        <tr>
+          <td class="fw-bold"><a href="/ventas/${op.id}" class="text-decoration-none text-orange">OP-${String(op.nro_op).padStart(4,'0')}</a></td>
+          <td><small>${tipoLabel[op.tipo_op] || op.tipo_op}</small></td>
+          <td class="fw-semibold">${op.cliente_nombre}</td>
+          <td><small class="text-muted">${op.domicilio_ppal || '—'}</small></td>
+          <td><small class="text-muted">${op.materiales || '—'}</small></td>
+          <td class="text-center"><span class="badge rounded-pill px-3 ${badgeMap[op.estado] || 'badge-pendiente'}">${op.estado}</span></td>
+          <td class="text-center"><a href="/ventas/${op.id}" class="btn btn-sm btn-outline-secondary">Ver</a></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`
+  }
+%>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="fw-bold mb-0 text-dark-title">📅 Entregas Planificadas</h4>
+  <a href="/ventas/nueva" class="btn btn-naranja">+ Nueva Operación</a>
+</div>
+
+<!-- Hoy -->
+<div class="card shadow-sm mb-3">
+  <div class="card-header d-flex justify-content-between align-items-center card-header-orange">
+    <span>📍 Planificados para hoy</span>
+    <span class="badge bg-orange text-white rounded-pill"><%= grupos.hoy.length %></span>
+  </div>
+  <div class="card-body p-0">
+    <%- tablaOps(grupos.hoy) %>
+  </div>
+</div>
+
+<!-- Mañana -->
+<div class="card shadow-sm mb-3">
+  <div class="card-header d-flex justify-content-between align-items-center card-header-light">
+    <span>📆 Planificados para mañana</span>
+    <span class="badge bg-mid text-white rounded-pill"><%= grupos.manana.length %></span>
+  </div>
+  <div class="card-body p-0">
+    <%- tablaOps(grupos.manana) %>
+  </div>
+</div>
+
+<!-- Finalizados -->
+<div class="card shadow-sm">
+  <div class="card-header d-flex justify-content-between align-items-center card-header-light">
+    <span>✅ Finalizados recientes</span>
+    <span class="badge bg-mid text-white rounded-pill"><%= grupos.finalizados.length %></span>
+  </div>
+  <div class="card-body p-0">
+    <%- tablaOps(grupos.finalizados) %>
+  </div>
+</div>

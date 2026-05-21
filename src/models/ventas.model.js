@@ -99,15 +99,15 @@ const VentasModel = {
     return op
   },
 
-  crear({ id_cliente, id_administrativo, tipo_op = 'M', observaciones = '', detalles, contenedor }) {
+  crear({ id_cliente, id_administrativo, tipo_op = 'M', observaciones = '', detalles, contenedor, fecha_entrega_planificada = null }) {
     const { nro } = db.prepare(
       `SELECT COALESCE(MAX(nro_op), 0) + 1 AS nro FROM op_encabezado`
     ).get()
     const id = crypto.randomUUID()
 
     const insertOP = db.prepare(`
-      INSERT INTO op_encabezado (id, id_cliente, id_administrativo, tipo_op, nro_op, estado, observaciones)
-      VALUES (?, ?, ?, ?, ?, 'pendiente', ?)
+      INSERT INTO op_encabezado (id, id_cliente, id_administrativo, tipo_op, nro_op, estado, observaciones, fecha_entrega_planificada)
+      VALUES (?, ?, ?, ?, ?, 'pendiente', ?, ?)
     `)
     const insertDetalle = db.prepare(`
       INSERT INTO op_detalle_material (id, id_orden_pedido, id_producto, cantidad_pedida, precio_unitario)
@@ -124,7 +124,7 @@ const VentasModel = {
     `)
 
     db.transaction(() => {
-      insertOP.run(id, id_cliente, id_administrativo, tipo_op, nro, observaciones)
+      insertOP.run(id, id_cliente, id_administrativo, tipo_op, nro, observaciones, fecha_entrega_planificada || null)
 
       if (tipo_op === 'C' && contenedor) {
         insertContenedor.run(
@@ -185,6 +185,70 @@ const VentasModel = {
         }
       }
     })()
+  },
+
+  // ── Vistas especializadas de Operaciones ──────────────────────
+
+  listarVentasDeposito({ estado, id_cliente } = {}) {
+    const wheres = [`op.tipo_op = 'M'`]
+    const params = []
+    if (estado)     { wheres.push('op.estado = ?');     params.push(estado) }
+    if (id_cliente) { wheres.push('op.id_cliente = ?'); params.push(id_cliente) }
+
+    return db.prepare(`
+      SELECT op.id, op.nro_op, op.estado, op.fecha_emision, op.fecha_entrega_planificada,
+             cli.nombre AS cliente_nombre,
+             (SELECT GROUP_CONCAT(p.nombre || ' × ' || CAST(d.cantidad_pedida AS TEXT) || ' ' || p.unidad_medida, ' / ')
+              FROM op_detalle_material d JOIN productos p ON p.id = d.id_producto
+              WHERE d.id_orden_pedido = op.id) AS materiales
+      FROM op_encabezado op
+      JOIN clientes cli ON cli.id = op.id_cliente
+      WHERE ${wheres.join(' AND ')}
+      ORDER BY op.created_at DESC
+    `).all(...params)
+  },
+
+  listarEntregas() {
+    const today    = new Date().toISOString().slice(0, 10)
+    const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 10)
+
+    const buildQ = (extraWhere) => db.prepare(`
+      SELECT op.id, op.nro_op, op.estado, op.tipo_op, op.fecha_emision, op.fecha_entrega_planificada,
+             cli.nombre AS cliente_nombre, cli.domicilio_ppal, cli.tel_whatsapp,
+             u.nombre AS administrativo_nombre,
+             (SELECT GROUP_CONCAT(p.nombre || ' × ' || CAST(d.cantidad_pedida AS TEXT) || ' ' || p.unidad_medida, ' / ')
+              FROM op_detalle_material d JOIN productos p ON p.id = d.id_producto
+              WHERE d.id_orden_pedido = op.id) AS materiales
+      FROM op_encabezado op
+      JOIN clientes cli ON cli.id = op.id_cliente
+      JOIN users    u   ON u.id   = op.id_administrativo
+      WHERE op.tipo_op IN ('M','B') ${extraWhere}
+    `)
+
+    return {
+      hoy:        buildQ(`AND op.fecha_entrega_planificada = ? AND op.estado != 'anulado' ORDER BY op.created_at ASC`).all(today),
+      manana:     buildQ(`AND op.fecha_entrega_planificada = ? AND op.estado != 'anulado' ORDER BY op.created_at ASC`).all(tomorrow),
+      finalizados: buildQ(`AND op.estado = 'entregado' ORDER BY op.created_at DESC LIMIT 50`).all(),
+    }
+  },
+
+  listarMaquinaria({ estado } = {}) {
+    const wheres = [`op.tipo_op = 'B'`]
+    const params = []
+    if (estado) { wheres.push('op.estado = ?'); params.push(estado) }
+
+    return db.prepare(`
+      SELECT op.id, op.nro_op, op.estado, op.fecha_emision, op.fecha_entrega_planificada, op.observaciones,
+             cli.nombre AS cliente_nombre, cli.domicilio_ppal,
+             u.nombre AS administrativo_nombre,
+             COALESCE((SELECT SUM(d.cantidad_pedida * d.precio_unitario)
+                       FROM op_detalle_material d WHERE d.id_orden_pedido = op.id), 0) AS total
+      FROM op_encabezado op
+      JOIN clientes cli ON cli.id = op.id_cliente
+      JOIN users    u   ON u.id   = op.id_administrativo
+      WHERE ${wheres.join(' AND ')}
+      ORDER BY op.created_at DESC
+    `).all(...params)
   },
 
   anular(id) {

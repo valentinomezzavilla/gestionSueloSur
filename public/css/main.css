@@ -214,6 +214,16 @@ body {
   padding-left: 0.5rem;
 }
 
+.sidebar-subsection {
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  padding-left: 2rem;
+  padding-top: 0.2rem;
+  letter-spacing: 0.5px;
+  display: block;
+}
+
 .sidebar-link {
   border-radius: 8px;
   padding: 0.5rem 0.75rem;
@@ -222,6 +232,10 @@ body {
 }
 .sidebar-link.is-sub {
   padding-left: 2rem;
+}
+.sidebar-link.is-sub-2 {
+  padding-left: 3rem;
+  font-size: 0.82rem;
 }
 .sidebar-link:hover {
   background: #2e3650 !important;

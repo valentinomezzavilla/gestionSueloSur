@@ -113,6 +113,9 @@ db.exec(`
   );
 `)
 
+// Migrations — columnas añadidas en sprints posteriores
+try { db.exec(`ALTER TABLE op_encabezado ADD COLUMN fecha_entrega_planificada TEXT`) } catch(e) {}
+
 // Seed inicial: un usuario por rol
 const seedUsuarios = [
   { usuario: 'valentino',     nombre: 'Valentino Mezzavilla', rol: 'dueno'          },

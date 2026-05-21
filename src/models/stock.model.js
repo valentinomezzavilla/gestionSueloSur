@@ -29,6 +29,23 @@ const StockModel = {
       WHERE id_producto = ?
     `).run(cantidad, id_producto)
   },
+
+  registrarEgreso(id_producto, cantidad) {
+    db.prepare(`
+      UPDATE stock SET cantidad_actual = MAX(0, cantidad_actual - ?)
+      WHERE id_producto = ?
+    `).run(cantidad, id_producto)
+  },
+
+  obtener(id_producto) {
+    return db.prepare(`
+      SELECT p.id, p.nombre, p.unidad_medida,
+             COALESCE(s.cantidad_actual, 0) AS cantidad_actual
+      FROM productos p
+      LEFT JOIN stock s ON s.id_producto = p.id
+      WHERE p.id = ?
+    `).get(id_producto)
+  },
 }
 
 module.exports = StockModel

@@ -27,6 +27,40 @@ const StockController = {
     res.redirect('/stock')
   },
 
+  egresoPage(req, res) {
+    try {
+      const stock = StockModel.listar()
+      res.render('pages/stock/egreso', { titulo: 'Stock — Egreso', stock })
+    } catch (err) {
+      console.error(err)
+      req.flash('error', 'Error al cargar la página de egreso.')
+      res.redirect('/stock')
+    }
+  },
+
+  egreso(req, res) {
+    const { id_producto } = req.params
+    const cantidad = parseFloat(req.body.cantidad) || 0
+    const motivo   = req.body.motivo || ''
+    try {
+      if (cantidad <= 0) {
+        req.flash('error', 'La cantidad debe ser mayor a cero.')
+        return res.redirect('/stock/egreso')
+      }
+      const item = StockModel.obtener(id_producto)
+      if (!item) {
+        req.flash('error', 'Producto no encontrado.')
+        return res.redirect('/stock/egreso')
+      }
+      StockModel.registrarEgreso(id_producto, cantidad)
+      req.flash('success', `Egreso de ${cantidad} ${item.unidad_medida} de ${item.nombre} registrado${motivo ? ` (${motivo})` : ''}.`)
+    } catch (err) {
+      console.error(err)
+      req.flash('error', 'Error al registrar el egreso.')
+    }
+    res.redirect('/stock/egreso')
+  },
+
   ingreso(req, res) {
     const { id_producto } = req.params
     const cantidad = parseFloat(req.body.cantidad) || 0

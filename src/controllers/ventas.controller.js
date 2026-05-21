@@ -34,7 +34,7 @@ const VentasController = {
       const productos    = VentasModel.listarProductos()
       const contenedores = ContenedoresModel.disponibles()
       res.render('pages/ventas/nueva', {
-        titulo: 'Nueva Orden de Pedido',
+        titulo: 'Nueva Operación',
         clientes,
         productos,
         contenedores,
@@ -49,7 +49,7 @@ const VentasController = {
 
   crear(req, res) {
     try {
-      const { id_cliente, tipo_op, observaciones } = req.body
+      const { id_cliente, tipo_op, observaciones, fecha_entrega_planificada } = req.body
       const tipo = tipo_op || 'M'
 
       if (tipo === 'C') {
@@ -63,6 +63,7 @@ const VentasController = {
           id_administrativo: req.session.user.id,
           tipo_op: 'C',
           observaciones: observaciones || '',
+          fecha_entrega_planificada: fecha_entrega_planificada || null,
           contenedor: {
             id_contenedor:     id_contenedor || null,
             domicilio_entrega,
@@ -102,6 +103,7 @@ const VentasController = {
         id_administrativo: req.session.user.id,
         tipo_op: tipo,
         observaciones: observaciones || '',
+        fecha_entrega_planificada: fecha_entrega_planificada || null,
         detalles,
       })
 
@@ -146,12 +148,12 @@ const VentasController = {
   entregar(req, res) {
     try {
       VentasModel.entregar(req.params.id)
-      req.flash('success', 'Entrega confirmada. Stock actualizado.')
+      return res.redirect(`/ventas/${req.params.id}/remito`)
     } catch (err) {
       console.error(err)
       req.flash('error', 'Error al confirmar la entrega.')
+      res.redirect(`/ventas/${req.params.id}`)
     }
-    res.redirect(`/ventas/${req.params.id}`)
   },
 
   anular(req, res) {

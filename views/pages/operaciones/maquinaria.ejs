@@ -1,0 +1,97 @@
+<%
+  const badgeMap = {
+    pendiente:  'badge-pendiente',
+    despachado: 'badge-en-transito',
+    entregado:  'badge-activo',
+    anulado:    'badge-alerta',
+  }
+%>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="fw-bold mb-0 text-dark-title">🚜 Maquinaria — Alquiler Bobcat</h4>
+  <a href="/ventas/nueva" class="btn btn-naranja">+ Nueva Operación</a>
+</div>
+
+<!-- Filtros -->
+<form method="GET" action="/operaciones/maquinaria" class="card shadow-sm mb-3">
+  <div class="card-body py-2">
+    <div class="row g-2 align-items-end">
+      <div class="col-md-3">
+        <label class="form-label">Estado</label>
+        <select name="estado" class="form-select form-select-sm">
+          <option value="">Todos</option>
+          <option value="pendiente"  <%= filtros.estado === 'pendiente'  ? 'selected' : '' %>>Pendiente</option>
+          <option value="despachado" <%= filtros.estado === 'despachado' ? 'selected' : '' %>>Despachado</option>
+          <option value="entregado"  <%= filtros.estado === 'entregado'  ? 'selected' : '' %>>Entregado</option>
+          <option value="anulado"    <%= filtros.estado === 'anulado'    ? 'selected' : '' %>>Anulado</option>
+        </select>
+      </div>
+      <div class="col-auto">
+        <button type="submit" class="btn btn-sm btn-naranja">Filtrar</button>
+        <a href="/operaciones/maquinaria" class="btn btn-sm btn-outline-secondary ms-1">Limpiar</a>
+      </div>
+    </div>
+  </div>
+</form>
+
+<!-- Tabla -->
+<div class="card shadow-sm">
+  <div class="card-body p-0">
+    <% if (!ops.length) { %>
+      <div class="text-center py-5 text-muted">
+        <div class="icon-lg">🚜</div>
+        <p class="mt-2">No hay operaciones de maquinaria registradas.</p>
+        <a href="/ventas/nueva" class="btn btn-naranja btn-sm">Crear operación Bobcat</a>
+      </div>
+    <% } else { %>
+    <table class="table table-hover align-middle mb-0">
+      <thead>
+        <tr>
+          <th>OP</th>
+          <th>Fecha</th>
+          <th>Fecha planificada</th>
+          <th>Cliente</th>
+          <th>Domicilio</th>
+          <th>Observaciones</th>
+          <th class="text-end">Total</th>
+          <th class="text-center">Estado</th>
+          <th class="text-center">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% ops.forEach(op => { %>
+        <tr class="<%= op.estado === 'anulado' ? 'text-muted' : '' %>">
+          <td class="fw-bold text-orange">
+            <a href="/ventas/<%= op.id %>" class="text-decoration-none text-orange">
+              OP-<%= String(op.nro_op).padStart(4,'0') %>
+            </a>
+          </td>
+          <td><small class="text-muted"><%= new Date(op.fecha_emision).toLocaleDateString('es-AR') %></small></td>
+          <td>
+            <% if (op.fecha_entrega_planificada) { %>
+              <small class="fw-semibold"><%= new Date(op.fecha_entrega_planificada + 'T12:00:00').toLocaleDateString('es-AR') %></small>
+            <% } else { %>
+              <small class="text-muted">—</small>
+            <% } %>
+          </td>
+          <td class="fw-semibold"><%= op.cliente_nombre %></td>
+          <td><small class="text-muted"><%= op.domicilio_ppal || '—' %></small></td>
+          <td><small class="text-muted"><%= op.observaciones || '—' %></small></td>
+          <td class="text-end fw-bold text-orange">
+            $<%= (op.total || 0).toLocaleString('es-AR', { minimumFractionDigits: 2 }) %>
+          </td>
+          <td class="text-center">
+            <span class="badge rounded-pill px-3 <%= badgeMap[op.estado] || 'badge-pendiente' %>">
+              <%= op.estado %>
+            </span>
+          </td>
+          <td class="text-center">
+            <a href="/ventas/<%= op.id %>" class="btn btn-sm btn-outline-secondary">Ver</a>
+          </td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+    <% } %>
+  </div>
+</div>

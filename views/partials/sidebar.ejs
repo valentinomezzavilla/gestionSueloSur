@@ -12,95 +12,150 @@
     <small class="user-role"><%= user?.rol?.replace('_',' ') %></small>
   </div>
 
-  <!-- Menú según rol -->
   <ul class="nav nav-pills flex-column gap-1 flex-grow-1">
 
+    <%
+      const t = titulo || ''
+      const esOp = ['Nueva Operación','Ventas Depósito','Entregas Planificadas','Alquileres','Maquinaria','Circuito del Día'].includes(t)
+    %>
+
+    <!-- ── OPERACIONES ─────────────────────────────── -->
     <% if (['admin_ventas','dueno'].includes(user?.rol)) { %>
+      <li class="nav-item mt-1">
+        <small class="sidebar-section">Operaciones</small>
+      </li>
+
       <li class="nav-item">
-        <a href="/ventas" class="nav-link text-white sidebar-link <%= titulo === 'Ventas' ? 'active' : '' %>">
-          📋 <span>Ventas</span>
+        <a href="/ventas/nueva"
+           class="nav-link text-white sidebar-link is-sub <%= t === 'Nueva Operación' ? 'active' : '' %>">
+          📝 <span>Nueva Operación</span>
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <small class="sidebar-subsection">Ventas</small>
+      </li>
+      <li class="nav-item">
+        <a href="/operaciones/ventas-deposito"
+           class="nav-link text-white sidebar-link is-sub-2 <%= t === 'Ventas Depósito' ? 'active' : '' %>">
+          🏪 <span>Ventas Depósito</span>
         </a>
       </li>
       <li class="nav-item">
-        <a href="/contenedores" class="nav-link text-white sidebar-link <%= titulo === 'Contenedores' ? 'active' : '' %>">
+        <a href="/operaciones/entregas"
+           class="nav-link text-white sidebar-link is-sub-2 <%= t === 'Entregas Planificadas' ? 'active' : '' %>">
+          📅 <span>Entregas Planificadas</span>
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <a href="/contenedores/alquileres"
+           class="nav-link text-white sidebar-link is-sub <%= t === 'Alquileres' ? 'active' : '' %>">
           📦 <span>Contenedores</span>
         </a>
       </li>
       <li class="nav-item">
-        <a href="/contenedores/alquileres" class="nav-link text-white sidebar-link is-sub <%= titulo === 'Alquileres' ? 'active' : '' %>">
-          📋 <span>Alquileres</span>
+        <a href="/operaciones/maquinaria"
+           class="nav-link text-white sidebar-link is-sub <%= t === 'Maquinaria' ? 'active' : '' %>">
+          🚜 <span>Maquinaria</span>
         </a>
       </li>
       <li class="nav-item">
-        <a href="/contenedores/circuito" class="nav-link text-white sidebar-link is-sub <%= titulo === 'Circuito del Día' ? 'active' : '' %>">
-          🗺️ <span>Circuito del Día</span>
+        <a href="/contenedores/circuito"
+           class="nav-link text-white sidebar-link is-sub <%= t === 'Circuito del Día' ? 'active' : '' %>">
+          🗺️ <span>Circuitos</span>
         </a>
       </li>
-      <li class="nav-item">
-        <a href="/stock" class="nav-link text-white sidebar-link <%= titulo === 'Stock' ? 'active' : '' %>">
-          🏗️ <span>Stock</span>
-        </a>
-      </li>
+
+      <!-- ── CONFIGURACIÓN ──────────────────────────── -->
       <li class="nav-item mt-2">
         <small class="sidebar-section">Configuración</small>
       </li>
       <li class="nav-item">
-        <a href="/clientes" class="nav-link text-white sidebar-link <%= titulo === 'Clientes' ? 'active' : '' %>">
+        <a href="/clientes"
+           class="nav-link text-white sidebar-link <%= t === 'Clientes' ? 'active' : '' %>">
           👥 <span>Clientes</span>
         </a>
       </li>
+
       <li class="nav-item">
-        <a href="/productos" class="nav-link text-white sidebar-link <%= titulo === 'Productos' ? 'active' : '' %>">
-          📦 <span>Productos</span>
+        <small class="sidebar-subsection">Stock</small>
+      </li>
+      <li class="nav-item">
+        <a href="/stock"
+           class="nav-link text-white sidebar-link is-sub-2 <%= t === 'Stock' ? 'active' : '' %>">
+          📥 <span>Ingreso</span>
         </a>
       </li>
       <li class="nav-item">
-        <a href="/compras" class="nav-link text-white sidebar-link <%= titulo === 'Compras' ? 'active' : '' %>">
+        <a href="/stock/egreso"
+           class="nav-link text-white sidebar-link is-sub-2 <%= t === 'Stock — Egreso' ? 'active' : '' %>">
+          📤 <span>Egreso</span>
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <a href="/compras"
+           class="nav-link text-white sidebar-link <%= t === 'Compras' ? 'active' : '' %>">
           🛒 <span>Compras</span>
         </a>
       </li>
     <% } %>
 
+    <!-- ── FINANZAS ────────────────────────────────── -->
     <% if (['admin_contable','dueno'].includes(user?.rol)) { %>
       <li class="nav-item mt-2">
         <small class="sidebar-section">Finanzas</small>
       </li>
       <li class="nav-item">
-        <a href="/cobranzas" class="nav-link text-white sidebar-link <%= titulo === 'Cobranzas' ? 'active' : '' %>">
+        <a href="/cobranzas"
+           class="nav-link text-white sidebar-link <%= t === 'Cobranzas' ? 'active' : '' %>">
           💰 <span>Cobranzas</span>
         </a>
       </li>
       <li class="nav-item">
-        <a href="/facturacion" class="nav-link text-white sidebar-link <%= titulo === 'Facturación' ? 'active' : '' %>">
+        <a href="/facturacion"
+           class="nav-link text-white sidebar-link <%= t === 'Facturación' ? 'active' : '' %>">
           🧾 <span>Facturación</span>
         </a>
       </li>
     <% } %>
 
+    <!-- ── CHOFER ──────────────────────────────────── -->
     <% if (user?.rol === 'chofer') { %>
       <li class="nav-item">
-        <a href="/hoja-de-ruta" class="nav-link text-white sidebar-link">
+        <a href="/hoja-de-ruta" class="nav-link text-white sidebar-link <%= t === 'Hoja de Ruta' ? 'active' : '' %>">
           🚛 <span>Mi Ruta del Día</span>
         </a>
       </li>
     <% } %>
 
+    <!-- ── GERENCIA ────────────────────────────────── -->
     <% if (user?.rol === 'dueno') { %>
       <li class="nav-item mt-2">
         <small class="sidebar-section">Gerencia</small>
       </li>
       <li class="nav-item">
-        <a href="/dashboard" class="nav-link text-white sidebar-link <%= titulo === 'Dashboard' ? 'active' : '' %>">
-          📊 <span>Dashboard</span>
+        <a href="/dashboard"
+           class="nav-link text-white sidebar-link <%= t === 'Dashboard' ? 'active' : '' %>">
+          📊 <span>Dashboard / Métricas</span>
         </a>
       </li>
       <li class="nav-item">
-        <a href="/flota" class="nav-link text-white sidebar-link <%= titulo === 'Flota' ? 'active' : '' %>">
-          🚚 <span>Flota</span>
+        <a href="/flota"
+           class="nav-link text-white sidebar-link <%= t === 'Flota Camiones' ? 'active' : '' %>">
+          🚚 <span>Flota Camiones</span>
         </a>
       </li>
       <li class="nav-item">
-        <a href="/usuarios" class="nav-link text-white sidebar-link <%= titulo === 'Usuarios' ? 'active' : '' %>">
+        <a href="/flota/personal"
+           class="nav-link text-white sidebar-link <%= t === 'Flota Personal' ? 'active' : '' %>">
+          👷 <span>Flota Personal</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="/usuarios"
+           class="nav-link text-white sidebar-link <%= t === 'Usuarios' ? 'active' : '' %>">
           🔑 <span>Usuarios</span>
         </a>
       </li>
@@ -110,9 +165,7 @@
 
   <!-- Logout -->
   <div class="sidebar-footer">
-    <a href="/auth/logout" class="btn btn-sm w-100 btn-logout">
-      Cerrar sesión
-    </a>
+    <a href="/auth/logout" class="btn btn-sm w-100 btn-logout">Cerrar sesión</a>
   </div>
 
 </nav>

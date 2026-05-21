@@ -1,6 +1,6 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
-  <h4 class="fw-bold mb-0 text-dark-title">📋 Nueva Orden de Pedido</h4>
-  <a href="/ventas" class="btn btn-sm btn-outline-secondary">← Volver</a>
+  <h4 class="fw-bold mb-0 text-dark-title">📋 Nueva Operación</h4>
+  <a href="/operaciones/ventas-deposito" class="btn btn-sm btn-outline-secondary">← Volver</a>
 </div>
 
 <form action="/ventas" method="POST">
@@ -28,6 +28,11 @@
                 <option value="C">Contenedor</option>
                 <option value="B">Bobcat</option>
               </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Fecha de entrega</label>
+              <input type="date" name="fecha_entrega_planificada" class="form-control">
+              <small class="text-muted">Para Entregas Planificadas</small>
             </div>
             <div class="col-12">
               <label class="form-label">Observaciones</label>
