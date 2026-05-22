@@ -154,6 +154,27 @@ const ContenedoresModel = {
     `).all()
   },
 
+  // Contenedores actualmente alquilados, con fecha estimada de fin
+  porFinalizar() {
+    return db.prepare(`
+      SELECT c.id, c.numero_contenedor,
+             um.fecha_movimiento AS fecha_entrega,
+             oc.plazo_alquiler, oc.domicilio_entrega,
+             cli.nombre AS cliente_actual,
+             op.nro_op,
+             date(substr(um.fecha_movimiento, 1, 10), '+' || oc.plazo_alquiler || ' days') AS fecha_fin_estimada,
+             CAST(julianday(date(substr(um.fecha_movimiento, 1, 10), '+' || oc.plazo_alquiler || ' days')) - julianday('now') AS INTEGER) AS dias_restantes
+      FROM contenedores c
+      JOIN (${SQL_ULTIMO_MOV}) um ON um.id_contenedor = c.id
+      JOIN op_detalle_contenedor oc ON oc.id = um.id_op_contenedor
+      JOIN op_encabezado op ON op.id = oc.id_orden_pedido
+      JOIN clientes cli ON cli.id = op.id_cliente
+      WHERE c.activo = 1 AND c.estado_general = 'operativo'
+        AND um.estado_paso IN ('entregado','en_alquiler','a_retirar')
+      ORDER BY fecha_fin_estimada ASC
+    `).all()
+  },
+
   // ── Estadísticas para el dashboard del módulo ─────────────────
   resumenPorEstado() {
     return db.prepare(`

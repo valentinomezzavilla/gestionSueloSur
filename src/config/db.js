@@ -35,7 +35,7 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS productos (
     id                TEXT PRIMARY KEY,
     nombre            TEXT NOT NULL,
-    unidad_medida     TEXT NOT NULL DEFAULT 'Tonelada',
+    unidad_medida     TEXT NOT NULL DEFAULT 'm³',
     precio_referencia REAL DEFAULT 0,
     activo            INTEGER DEFAULT 1,
     created_at        TEXT DEFAULT (datetime('now'))
@@ -115,6 +115,17 @@ db.exec(`
 
 // Migrations — columnas añadidas en sprints posteriores
 try { db.exec(`ALTER TABLE op_encabezado ADD COLUMN fecha_entrega_planificada TEXT`) } catch(e) {}
+try { db.exec(`ALTER TABLE op_encabezado ADD COLUMN nro_remito INTEGER`) } catch(e) {}
+try { db.exec(`ALTER TABLE op_encabezado ADD COLUMN modalidad TEXT`) } catch(e) {}
+try { db.exec(`ALTER TABLE op_encabezado ADD COLUMN domicilio_calle TEXT`) } catch(e) {}
+try { db.exec(`ALTER TABLE op_encabezado ADD COLUMN domicilio_altura INTEGER`) } catch(e) {}
+try { db.exec(`ALTER TABLE op_encabezado ADD COLUMN domicilio_sin_numero INTEGER DEFAULT 0`) } catch(e) {}
+try { db.exec(`ALTER TABLE op_encabezado ADD COLUMN domicilio_lat REAL`) } catch(e) {}
+try { db.exec(`ALTER TABLE op_encabezado ADD COLUMN domicilio_lng REAL`) } catch(e) {}
+try { db.exec(`ALTER TABLE op_encabezado ADD COLUMN metodo_pago TEXT`) } catch(e) {}
+
+// Áridos se venden por metro cúbico, no tonelada
+try { db.exec(`UPDATE productos SET unidad_medida = 'm³' WHERE unidad_medida = 'm³'`) } catch(e) {}
 
 // Seed inicial: un usuario por rol
 const seedUsuarios = [
@@ -138,12 +149,12 @@ if (cantProductos === 0) {
     `INSERT INTO productos (id, nombre, unidad_medida, precio_referencia) VALUES (?, ?, ?, ?)`
   )
   ;[
-    ['Arena Fina',     'Tonelada', 8500],
-    ['Arena Gruesa',   'Tonelada', 7800],
-    ['Piedra Partida', 'Tonelada', 9200],
-    ['Piedra Bola',    'Tonelada', 8800],
-    ['Canto Rodado',   'Tonelada', 10500],
-    ['Tosca',          'Tonelada', 5500]
+    ['Arena Fina',     'm³', 8500],
+    ['Arena Gruesa',   'm³', 7800],
+    ['Piedra Partida', 'm³', 9200],
+    ['Piedra Bola',    'm³', 8800],
+    ['Canto Rodado',   'm³', 10500],
+    ['Tosca',          'm³', 5500]
   ].forEach(p => insProd.run(crypto.randomUUID(), ...p))
 }
 

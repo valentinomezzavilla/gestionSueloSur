@@ -1,73 +1,96 @@
-<div class="d-flex justify-content-between align-items-center mb-4">
-  <h4 class="fw-bold mb-0 text-dark-title">📋 Nueva Operación</h4>
-  <a href="/operaciones/ventas-deposito" class="btn btn-sm btn-outline-secondary">← Volver</a>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+
+<div class="page-header mb-4">
+  <h4 class="page-title">Nueva operación</h4>
+  <a href="/operaciones/ventas-deposito" class="btn btn-ghost btn-sm">Volver</a>
 </div>
 
-<form action="/ventas" method="POST">
-  <div class="row g-4">
+<form action="/ventas" method="POST" id="formOperacion" autocomplete="off">
 
-    <!-- Encabezado -->
-    <div class="col-md-8">
-      <div class="card shadow-sm">
-        <div class="card-header card-header-light">Datos generales</div>
-        <div class="card-body">
+  <div class="row g-3">
+
+    <!-- 1. Datos generales -->
+    <div class="col-12">
+      <div class="card-modern">
+        <div class="card-modern-header">
+          <span class="card-modern-title">Datos generales</span>
+        </div>
+        <div class="card-modern-body">
           <div class="row g-3">
-            <div class="col-md-8">
+            <div class="col-md-6">
               <label class="form-label">Cliente *</label>
-              <select name="id_cliente" class="form-select" required>
-                <option value="">Seleccionar cliente...</option>
+              <input type="text" name="cliente_texto" id="clienteTexto"
+                     class="form-control" list="listaClientes"
+                     placeholder="Buscar o escribir el nombre del cliente..."
+                     required autofocus>
+              <input type="hidden" name="id_cliente" id="clienteId">
+              <datalist id="listaClientes">
                 <% clientes.forEach(c => { %>
-                  <option value="<%= c.id %>"><%= c.nombre %></option>
+                  <option value="<%= c.nombre %>" data-id="<%= c.id %>"></option>
                 <% }) %>
-              </select>
+              </datalist>
+              <small class="text-muted">Si el cliente no existe se crea automáticamente.</small>
             </div>
-            <div class="col-md-4">
-              <label class="form-label">Tipo de OP</label>
+
+            <div class="col-md-3">
+              <label class="form-label">Tipo de operación</label>
               <select name="tipo_op" id="selectTipo" class="form-select">
-                <option value="M" selected>Material (áridos)</option>
-                <option value="C">Contenedor</option>
-                <option value="B">Bobcat</option>
+                <option value="M" selected>Venta de áridos</option>
+                <option value="C">Alquiler de contenedor</option>
+                <option value="B">Alquiler de Bobcat</option>
               </select>
             </div>
-            <div class="col-md-4">
+
+            <div class="col-md-3">
               <label class="form-label">Fecha de entrega</label>
-              <input type="date" name="fecha_entrega_planificada" class="form-control">
-              <small class="text-muted">Para Entregas Planificadas</small>
+              <input type="date" name="fecha_entrega_planificada" id="fechaEntrega" class="form-control">
             </div>
+
+            <!-- Modalidad (solo Material) -->
+            <div class="col-12 d-none" id="bloqueSubtipo">
+              <label class="form-label d-block">Modalidad</label>
+              <div class="modalidad-group">
+                <label class="modalidad-option">
+                  <input type="radio" name="modalidad" value="deposito" checked>
+                  <span class="modalidad-label">
+                    <span class="modalidad-title">Venta en depósito</span>
+                    <span class="modalidad-sub">El cliente retira en planta</span>
+                  </span>
+                </label>
+                <label class="modalidad-option">
+                  <input type="radio" name="modalidad" value="flete">
+                  <span class="modalidad-label">
+                    <span class="modalidad-title">Venta planificada (con flete)</span>
+                    <span class="modalidad-sub">Se entrega en domicilio del cliente</span>
+                  </span>
+                </label>
+              </div>
+            </div>
+
             <div class="col-12">
               <label class="form-label">Observaciones</label>
-              <textarea name="observaciones" class="form-control" rows="2" placeholder="Notas opcionales..."></textarea>
+              <textarea name="observaciones" class="form-control" rows="2"
+                        placeholder="Notas opcionales..."></textarea>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Resumen -->
-    <div class="col-md-4">
-      <div class="card shadow-sm h-100 card-accent-orange">
-        <div class="card-body d-flex flex-column justify-content-center text-center">
-          <p class="text-muted small mb-1">Total estimado</p>
-          <h2 class="fw-bold text-orange" id="totalGeneral">$0,00</h2>
-          <small class="text-muted">Se actualiza automáticamente</small>
-        </div>
-      </div>
-    </div>
-
-    <!-- Detalle MATERIAL / BOBCAT -->
+    <!-- 2. Productos (Material / Bobcat) -->
     <div class="col-12" id="bloqueProductos">
-      <div class="card shadow-sm">
-        <div class="card-header card-header-light d-flex justify-content-between align-items-center">
-          <span class="fw-bold">Productos</span>
-          <button type="button" class="btn btn-sm btn-naranja" id="btnAgregar">+ Agregar producto</button>
+      <div class="card-modern">
+        <div class="card-modern-header d-flex justify-content-between align-items-center">
+          <span class="card-modern-title">Productos</span>
+          <button type="button" class="btn btn-sm btn-primary-modern" id="btnAgregar">+ Agregar producto</button>
         </div>
-        <div class="card-body p-0">
-          <table class="table align-middle mb-0" id="tablaProductos">
+        <div class="card-modern-body p-0">
+          <table class="table-modern mb-0">
             <thead>
               <tr>
                 <th>Producto</th>
                 <th class="text-end col-w-140">Cantidad</th>
-                <th class="text-end col-w-160">Precio Unit.</th>
+                <th class="text-end col-w-160">Precio unit.</th>
                 <th class="text-end col-w-140">Subtotal</th>
                 <th class="col-w-50"></th>
               </tr>
@@ -78,24 +101,46 @@
       </div>
     </div>
 
-    <!-- Detalle CONTENEDOR -->
+    <!-- 3. Contenedor -->
     <div class="col-12 d-none" id="bloqueContenedor">
-      <div class="card shadow-sm">
-        <div class="card-header card-header-light">Datos del alquiler de contenedor</div>
-        <div class="card-body">
+      <div class="card-modern">
+        <div class="card-modern-header">
+          <span class="card-modern-title">Datos del alquiler</span>
+        </div>
+        <div class="card-modern-body">
           <div class="row g-3">
-            <div class="col-md-4">
+            <div class="col-md-6">
               <label class="form-label">Contenedor a asignar</label>
-              <select name="id_contenedor" class="form-select">
-                <option value="">— asignar después —</option>
-                <% contenedores.forEach(c => { %>
-                  <option value="<%= c.id %>">N° <%= c.numero_contenedor %></option>
-                <% }) %>
+              <select name="id_contenedor" id="selectContenedor" class="form-select">
+                <% if (contenedores.length) { %>
+                  <option value="">Asignar después</option>
+                  <% contenedores.forEach(c => { %>
+                    <option value="<%= c.id %>">N° <%= c.numero_contenedor %> · disponible en planta</option>
+                  <% }) %>
+                <% } else { %>
+                  <option value="">No hay contenedores disponibles en planta</option>
+                <% } %>
               </select>
-              <small class="text-muted">Solo se listan los que están en planta.</small>
+              <% if (porFinalizar.length) { %>
+                <div class="form-check mt-2">
+                  <input type="checkbox" id="verPorFinalizar" class="form-check-input">
+                  <label class="form-check-label small" for="verPorFinalizar">
+                    Ver contenedores por finalizar (programar para cuando se desocupen)
+                  </label>
+                </div>
+              <% } %>
             </div>
-            <div class="col-md-4">
-              <label class="form-label">Zona de entrega *</label>
+            <div class="col-md-3">
+              <label class="form-label">Plazo (días)</label>
+              <input type="number" name="plazo_alquiler" class="form-control" min="1" step="1" value="5">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Precio del alquiler</label>
+              <input type="number" name="precio_alquiler" id="inputPrecioCont"
+                     class="form-control" step="1" min="0" placeholder="0">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Zona</label>
               <select name="zona_entrega" class="form-select">
                 <option value="">Seleccionar...</option>
                 <% ['Norte','Sur','Este','Oeste','Centro'].forEach(z => { %>
@@ -103,55 +148,185 @@
                 <% }) %>
               </select>
             </div>
-            <div class="col-md-4">
-              <label class="form-label">Plazo de alquiler (días)</label>
-              <input type="number" name="plazo_alquiler" class="form-control" min="1" value="5">
-            </div>
-            <div class="col-md-8">
-              <label class="form-label">Domicilio de entrega *</label>
-              <input type="text" name="domicilio_entrega" class="form-control" placeholder="Calle y número">
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">Precio del alquiler</label>
-              <input type="number" name="precio_alquiler" id="inputPrecioCont"
-                     class="form-control" step="0.01" min="0" placeholder="0.00">
+
+            <!-- Lista de contenedores por finalizar -->
+            <div class="col-12 d-none" id="bloquePorFinalizar">
+              <div class="por-finalizar-list">
+                <small class="text-muted d-block mb-2 fw-semibold">Contenedores actualmente alquilados — fecha estimada de fin:</small>
+                <% porFinalizar.forEach(c => { %>
+                  <label class="por-finalizar-item">
+                    <input type="radio" name="id_contenedor_futuro" value="<%= c.id %>">
+                    <div class="por-finalizar-info">
+                      <span class="por-finalizar-num">N° <%= c.numero_contenedor %></span>
+                      <span class="por-finalizar-fecha">
+                        Finaliza <%= new Date(c.fecha_fin_estimada + 'T12:00:00').toLocaleDateString('es-AR') %>
+                        <% if (c.dias_restantes >= 0) { %>
+                          <small>(en <%= c.dias_restantes %> día<%= c.dias_restantes === 1 ? '' : 's' %>)</small>
+                        <% } else { %>
+                          <small>(vencido hace <%= Math.abs(c.dias_restantes) %> día<%= Math.abs(c.dias_restantes) === 1 ? '' : 's' %>)</small>
+                        <% } %>
+                      </span>
+                      <span class="por-finalizar-dir">📍 <%= c.domicilio_entrega %> · <%= c.cliente_actual %></span>
+                    </div>
+                  </label>
+                <% }) %>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="col-12 text-end">
-      <a href="/ventas" class="btn btn-outline-secondary me-2">Cancelar</a>
-      <button type="submit" class="btn btn-naranja px-4">Guardar OP</button>
+    <!-- 4. Dirección de entrega (flete) -->
+    <div class="col-12 d-none" id="bloqueDireccion">
+      <div class="card-modern">
+        <div class="card-modern-header">
+          <span class="card-modern-title">Dirección de entrega</span>
+        </div>
+        <div class="card-modern-body">
+          <div class="row g-3 align-items-end">
+            <div class="col-md-5">
+              <label class="form-label">Calle *</label>
+              <input type="text" name="dom_calle" id="domCalle" class="form-control"
+                     placeholder="Ej: Av. Colón">
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Altura</label>
+              <input type="number" name="dom_altura" id="domAltura" class="form-control"
+                     step="1" min="0" placeholder="1234">
+            </div>
+            <div class="col-md-2">
+              <div class="form-check pt-3">
+                <input type="checkbox" name="dom_sin_numero" id="domSinNumero" class="form-check-input" value="1">
+                <label class="form-check-label" for="domSinNumero">Sin número</label>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <button type="button" id="btnBuscarDir" class="btn btn-secondary-modern w-100">Buscar dirección</button>
+            </div>
+            <input type="hidden" name="dom_lat" id="domLat">
+            <input type="hidden" name="dom_lng" id="domLng">
+            <div class="col-12">
+              <div id="mapa" class="map-container d-none"></div>
+              <small id="mapaInfo" class="text-muted d-block mt-2"></small>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+
+    <!-- 5. Método de pago -->
+    <div class="col-12">
+      <div class="card-modern">
+        <div class="card-modern-header">
+          <span class="card-modern-title">Método de pago</span>
+        </div>
+        <div class="card-modern-body">
+          <div class="pago-group">
+            <% [
+              ['efectivo','Efectivo'],
+              ['transferencia','Transferencia'],
+              ['vales','Vales'],
+              ['cuenta_corriente','Cuenta corriente'],
+            ].forEach(([v, l], i) => { %>
+              <label class="pago-option">
+                <input type="radio" name="metodo_pago" value="<%= v %>" <%= i === 0 ? 'checked' : '' %>>
+                <span class="pago-label"><%= l %></span>
+              </label>
+            <% }) %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. Resumen de la operación (compacto, al final) -->
+    <div class="col-12">
+      <div class="card-modern resumen-card">
+        <div class="card-modern-header">
+          <span class="card-modern-title">Resumen de la operación</span>
+        </div>
+        <div class="card-modern-body">
+          <div class="resumen-grid">
+            <div><span class="rs-label">Cliente</span><span class="rs-value" data-rs="cliente">—</span></div>
+            <div><span class="rs-label">Tipo</span><span class="rs-value" data-rs="tipo">—</span></div>
+            <div><span class="rs-label">Modalidad</span><span class="rs-value" data-rs="modalidad">—</span></div>
+            <div><span class="rs-label">Fecha de entrega</span><span class="rs-value" data-rs="fecha">—</span></div>
+            <div><span class="rs-label">Método de pago</span><span class="rs-value" data-rs="pago">—</span></div>
+          </div>
+          <div class="resumen-items mt-3" id="resumenItems"></div>
+          <div class="resumen-total mt-3">
+            <span class="rs-total-label">TOTAL ESTIMADO</span>
+            <span class="rs-total-value" id="totalGeneral">$0</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7. Botones -->
+    <div class="col-12 text-end">
+      <a href="/operaciones/ventas-deposito" class="btn btn-ghost me-2">Cancelar</a>
+      <button type="submit" class="btn btn-primary-modern px-4">Crear operación y generar remito</button>
+    </div>
+
   </div>
 </form>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 <script>
   const PRODUCTOS = <%- productosJson %>
 
-  function formatPesos(n) {
-    return '$' + n.toLocaleString('es-AR', { minimumFractionDigits: 2 })
-  }
+  const fmt = n => '$' + Math.round(n).toLocaleString('es-AR')
+  const labelTipo = { M: 'Venta de áridos', C: 'Alquiler de contenedor', B: 'Alquiler de Bobcat' }
+  const labelModalidad = { deposito: 'Venta en depósito', flete: 'Con flete (entrega a domicilio)' }
+  const labelPago = { efectivo: 'Efectivo', transferencia: 'Transferencia', vales: 'Vales', cuenta_corriente: 'Cuenta corriente' }
 
+  // ── Total + resumen ───────────────────────────────────────
   function calcularTotales() {
     const tipo = document.getElementById('selectTipo').value
     let total = 0
+    const items = []
+
     if (tipo === 'C') {
-      total = parseFloat(document.getElementById('inputPrecioCont').value) || 0
+      total = parseInt(document.getElementById('inputPrecioCont').value) || 0
+      if (total > 0) items.push({ desc: 'Alquiler de contenedor', sub: total })
     } else {
       document.querySelectorAll('.fila-producto').forEach(fila => {
-        const cant   = parseFloat(fila.querySelector('.inp-cantidad').value) || 0
-        const precio = parseFloat(fila.querySelector('.inp-precio').value)   || 0
+        const cant   = parseInt(fila.querySelector('.inp-cantidad').value) || 0
+        const precio = parseInt(fila.querySelector('.inp-precio').value)   || 0
         const sub    = cant * precio
-        fila.querySelector('.td-subtotal').textContent = formatPesos(sub)
+        fila.querySelector('.td-subtotal').textContent = fmt(sub)
         total += sub
+        const sel = fila.querySelector('.sel-producto')
+        const prodName = sel.options[sel.selectedIndex]?.text || ''
+        if (cant > 0 && sub > 0) items.push({ desc: `${prodName} × ${cant}`, sub })
       })
     }
-    document.getElementById('totalGeneral').textContent = formatPesos(total)
+    document.getElementById('totalGeneral').textContent = fmt(total)
+    actualizarResumen(items)
   }
 
+  function actualizarResumen(items) {
+    const tipo = document.getElementById('selectTipo').value
+    const modSel = document.querySelector('input[name=modalidad]:checked')
+    const modalidad = (tipo === 'M') ? (modSel?.value || 'deposito') : 'flete'
+    const pago = document.querySelector('input[name=metodo_pago]:checked')?.value
+    const fecha = document.getElementById('fechaEntrega').value
+    const cliente = document.getElementById('clienteTexto').value || '—'
+
+    const set = (k, v) => document.querySelector(`[data-rs="${k}"]`).textContent = v || '—'
+    set('cliente', cliente)
+    set('tipo', labelTipo[tipo])
+    set('modalidad', labelModalidad[modalidad])
+    set('fecha', fecha ? new Date(fecha + 'T12:00:00').toLocaleDateString('es-AR') : '—')
+    set('pago', labelPago[pago])
+
+    const ul = document.getElementById('resumenItems')
+    ul.innerHTML = items.length
+      ? items.map(i => `<div class="rs-item"><span>${i.desc}</span><span class="rs-item-sub">${fmt(i.sub)}</span></div>`).join('')
+      : '<small class="text-muted">Aún no se cargaron items.</small>'
+  }
+
+  // ── Filas de productos ────────────────────────────────────
   function agregarFila() {
     const tbody = document.getElementById('filas')
     const tr = document.createElement('tr')
@@ -160,13 +335,13 @@
       <td>
         <select name="id_producto[]" class="form-select form-select-sm sel-producto">
           <option value="">Seleccionar...</option>
-          ${PRODUCTOS.map(p => `<option value="${p.id}" data-precio="${p.precio_referencia}">${p.nombre} (${p.unidad_medida})</option>`).join('')}
+          ${PRODUCTOS.map(p => `<option value="${p.id}" data-precio="${Math.round(p.precio_referencia)}">${p.nombre} (${p.unidad_medida})</option>`).join('')}
         </select>
       </td>
-      <td><input type="number" name="cantidad_pedida[]" class="form-control form-control-sm inp-cantidad text-end" step="0.01" min="0" placeholder="0.00"></td>
-      <td><input type="number" name="precio_unitario[]" class="form-control form-control-sm inp-precio text-end" step="0.01" min="0" placeholder="0.00"></td>
-      <td class="text-end fw-semibold td-subtotal">$0,00</td>
-      <td class="text-center"><button type="button" class="btn btn-sm text-danger btn-eliminar" title="Eliminar">✕</button></td>
+      <td><input type="number" name="cantidad_pedida[]" class="form-control form-control-sm inp-cantidad text-end" step="1" min="0" placeholder="0"></td>
+      <td><input type="number" name="precio_unitario[]" class="form-control form-control-sm inp-precio text-end" step="1" min="0" placeholder="0"></td>
+      <td class="text-end fw-semibold td-subtotal">$0</td>
+      <td class="text-center"><button type="button" class="btn-icon-danger btn-eliminar" title="Eliminar">×</button></td>
     `
     tr.querySelector('.sel-producto').addEventListener('change', function () {
       tr.querySelector('.inp-precio').value = this.options[this.selectedIndex].dataset.precio || ''
@@ -182,25 +357,119 @@
     tbody.appendChild(tr)
   }
 
-  // Toggle entre Material/Bobcat y Contenedor
-  function actualizarVistaTipo() {
-    const tipo = document.getElementById('selectTipo').value
-    document.getElementById('bloqueProductos').classList.toggle('d-none', tipo === 'C')
-    document.getElementById('bloqueContenedor').classList.toggle('d-none', tipo !== 'C')
-    // Toggle 'required' para no bloquear el submit
-    document.querySelectorAll('#bloqueProductos .inp-cantidad, #bloqueProductos .inp-precio, #bloqueProductos .sel-producto').forEach(el => {
-      el.required = tipo !== 'C'
+  // ── Cliente autocomplete ──────────────────────────────────
+  const clienteTexto = document.getElementById('clienteTexto')
+  const clienteId    = document.getElementById('clienteId')
+  function syncClienteId() {
+    const valor = clienteTexto.value.trim()
+    const opcion = Array.from(document.querySelectorAll('#listaClientes option'))
+      .find(o => o.value.toLowerCase() === valor.toLowerCase())
+    clienteId.value = opcion ? opcion.dataset.id : ''
+    actualizarResumen([])
+    calcularTotales()
+  }
+  clienteTexto.addEventListener('input',  syncClienteId)
+  clienteTexto.addEventListener('change', syncClienteId)
+
+  // ── Toggle ver contenedores por finalizar ────────────────
+  const verPF = document.getElementById('verPorFinalizar')
+  if (verPF) {
+    verPF.addEventListener('change', () => {
+      document.getElementById('bloquePorFinalizar').classList.toggle('d-none', !verPF.checked)
+      if (verPF.checked) {
+        document.getElementById('selectContenedor').value = ''
+      } else {
+        document.querySelectorAll('input[name=id_contenedor_futuro]').forEach(r => r.checked = false)
+      }
     })
-    document.querySelectorAll('#bloqueContenedor [name=domicilio_entrega], #bloqueContenedor [name=zona_entrega]').forEach(el => {
-      el.required = tipo === 'C'
+  }
+  // Si elige un futuro, limpiamos el select principal
+  document.querySelectorAll('input[name=id_contenedor_futuro]').forEach(r => {
+    r.addEventListener('change', () => {
+      if (r.checked) document.getElementById('selectContenedor').value = r.value
+    })
+  })
+
+  // ── Toggle de bloques ─────────────────────────────────────
+  function actualizarVista() {
+    const tipo = document.getElementById('selectTipo').value
+    const modalidad = document.querySelector('input[name=modalidad]:checked')?.value
+    const esMaterial   = tipo === 'M'
+    const esContenedor = tipo === 'C'
+    const esBobcat     = tipo === 'B'
+    const conFlete     = (esMaterial && modalidad === 'flete') || esContenedor || esBobcat
+
+    document.getElementById('bloqueSubtipo').classList.toggle('d-none', !esMaterial)
+    document.getElementById('bloqueProductos').classList.toggle('d-none', esContenedor)
+    document.getElementById('bloqueContenedor').classList.toggle('d-none', !esContenedor)
+    document.getElementById('bloqueDireccion').classList.toggle('d-none', !conFlete)
+
+    document.querySelectorAll('#bloqueProductos .inp-cantidad, #bloqueProductos .inp-precio, #bloqueProductos .sel-producto').forEach(el => {
+      el.required = !esContenedor
     })
     calcularTotales()
   }
 
+  document.getElementById('selectTipo').addEventListener('change', actualizarVista)
+  document.querySelectorAll('input[name=modalidad]').forEach(r => r.addEventListener('change', actualizarVista))
+  document.querySelectorAll('input[name=metodo_pago]').forEach(r => r.addEventListener('change', calcularTotales))
+  document.getElementById('fechaEntrega').addEventListener('change', calcularTotales)
   document.getElementById('btnAgregar').addEventListener('click', agregarFila)
-  document.getElementById('selectTipo').addEventListener('change', actualizarVistaTipo)
   document.getElementById('inputPrecioCont').addEventListener('input', calcularTotales)
 
+  // ── Sin número ────────────────────────────────────────────
+  document.getElementById('domSinNumero').addEventListener('change', function () {
+    const altura = document.getElementById('domAltura')
+    altura.disabled = this.checked
+    if (this.checked) altura.value = ''
+  })
+
+  // ── Mapa + Geocoding ──────────────────────────────────────
+  let mapa = null, marker = null
+  const mapaDiv  = document.getElementById('mapa')
+  const mapaInfo = document.getElementById('mapaInfo')
+
+  function inicializarMapa(lat, lng) {
+    if (!mapa) {
+      mapaDiv.classList.remove('d-none')
+      mapa = L.map('mapa').setView([lat, lng], 16)
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap', maxZoom: 19,
+      }).addTo(mapa)
+      marker = L.marker([lat, lng], { draggable: true }).addTo(mapa)
+      marker.on('dragend', e => {
+        const p = e.target.getLatLng()
+        document.getElementById('domLat').value = p.lat
+        document.getElementById('domLng').value = p.lng
+      })
+    } else {
+      mapa.setView([lat, lng], 16)
+      marker.setLatLng([lat, lng])
+    }
+    document.getElementById('domLat').value = lat
+    document.getElementById('domLng').value = lng
+    setTimeout(() => mapa.invalidateSize(), 100)
+  }
+
+  document.getElementById('btnBuscarDir').addEventListener('click', async () => {
+    const calle  = document.getElementById('domCalle').value.trim()
+    const altura = document.getElementById('domAltura').value.trim()
+    const sinNum = document.getElementById('domSinNumero').checked
+    if (!calle) { mapaInfo.textContent = 'Ingresá la calle antes de buscar.'; return }
+    const query = sinNum ? `${calle}, Córdoba, Argentina` : `${calle} ${altura}, Córdoba, Argentina`
+    mapaInfo.textContent = 'Buscando dirección...'
+    try {
+      const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1&countrycodes=ar`)
+      const data = await r.json()
+      if (!data.length) { mapaInfo.textContent = 'No se encontró la dirección.'; return }
+      const { lat, lon, display_name } = data[0]
+      inicializarMapa(parseFloat(lat), parseFloat(lon))
+      mapaInfo.textContent = display_name
+    } catch (err) {
+      mapaInfo.textContent = 'Error al buscar la dirección.'
+    }
+  })
+
   agregarFila()
-  actualizarVistaTipo()
+  actualizarVista()
 </script>

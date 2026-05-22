@@ -1,0 +1,388 @@
+@use 'variables' as *;
+
+// ── Page header ────────────────────────────────────────────────
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.page-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: $dark;
+  margin: 0;
+  letter-spacing: -.3px;
+}
+
+// ── Botones modernos ───────────────────────────────────────────
+.btn-primary-modern {
+  background: $accent;
+  color: #fff;
+  border: 1px solid $accent;
+  border-radius: $radius-sm;
+  font-weight: 500;
+  font-size: .85rem;
+  padding: .5rem 1rem;
+  transition: background .12s, transform .05s;
+
+  &:hover  { background: $accent-dark; border-color: $accent-dark; color: #fff; }
+  &:active { transform: translateY(1px); }
+}
+
+.btn-secondary-modern {
+  background: #fff;
+  color: $dark;
+  border: 1px solid #d1d5db;
+  border-radius: $radius-sm;
+  font-weight: 500;
+  font-size: .85rem;
+  padding: .5rem 1rem;
+  transition: background .12s, border-color .12s;
+
+  &:hover { background: #f3f4f6; border-color: #9ca3af; }
+}
+
+.btn-ghost {
+  background: transparent;
+  color: #6b7280;
+  border: none;
+  font-weight: 500;
+  font-size: .85rem;
+  padding: .4rem .8rem;
+  border-radius: $radius-sm;
+  transition: color .12s, background .12s;
+
+  &:hover { color: $dark; background: #f3f4f6; }
+}
+
+.btn-icon-danger {
+  background: transparent;
+  border: none;
+  color: $red;
+  font-size: 1.1rem;
+  line-height: 1;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background .12s;
+
+  &:hover { background: rgba($red, .1); }
+}
+
+// ── Cards modernos ─────────────────────────────────────────────
+.card-modern {
+  background: #fff;
+  border: 1px solid #e4e9f2;
+  border-radius: $radius-md;
+  overflow: hidden;
+  height: 100%;
+}
+
+.card-modern-header {
+  padding: .85rem 1.15rem;
+  border-bottom: 1px solid #eef1f6;
+  background: #fafbfc;
+}
+
+.card-modern-title {
+  font-weight: 600;
+  font-size: .82rem;
+  color: $dark;
+  letter-spacing: .1px;
+  text-transform: uppercase;
+}
+
+.card-modern-body {
+  padding: 1.15rem;
+
+  &.p-0 { padding: 0; }
+}
+
+// ── Total grande ───────────────────────────────────────────────
+.total-display {
+  font-size: 2rem;
+  font-weight: 700;
+  color: $accent;
+  letter-spacing: -.5px;
+  line-height: 1.1;
+  margin: .5rem 0;
+}
+
+// ── Tabla moderna ──────────────────────────────────────────────
+.table-modern {
+  width: 100%;
+  margin: 0;
+  border-collapse: collapse;
+
+  thead th {
+    background: #fafbfc;
+    color: #6b7280;
+    font-weight: 600;
+    font-size: .72rem;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    padding: .65rem 1rem;
+    border-bottom: 1px solid #eef1f6;
+    text-align: left;
+  }
+
+  tbody td {
+    padding: .55rem 1rem;
+    border-bottom: 1px solid #f3f4f7;
+    font-size: .85rem;
+    vertical-align: middle;
+  }
+
+  tbody tr:last-child td { border-bottom: none; }
+
+  .form-control,
+  .form-select { font-size: .85rem; }
+}
+
+// ── Modalidad (radio cards) ────────────────────────────────────
+.modalidad-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .75rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.modalidad-option {
+  display: block;
+  border: 1px solid #d1d5db;
+  border-radius: $radius-sm;
+  padding: .85rem 1rem;
+  cursor: pointer;
+  transition: border-color .12s, background .12s;
+  margin: 0;
+
+  &:hover { border-color: #9ca3af; background: #fafbfc; }
+
+  input[type="radio"] {
+    display: none;
+  }
+
+  input[type="radio"]:checked + .modalidad-label .modalidad-title {
+    color: $accent;
+  }
+}
+
+.modalidad-option:has(input[type="radio"]:checked) {
+  border-color: $accent;
+  background: $accent-soft;
+}
+
+.modalidad-label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.modalidad-title {
+  font-weight: 600;
+  font-size: .9rem;
+  color: $dark;
+}
+
+.modalidad-sub {
+  font-size: .75rem;
+  color: #6b7280;
+}
+
+// ── Mapa ───────────────────────────────────────────────────────
+.map-container {
+  height: 360px;
+  width: 100%;
+  border-radius: $radius-md;
+  border: 1px solid #e4e9f2;
+  overflow: hidden;
+  position: relative;
+  z-index: 0;
+}
+
+// ── Método de pago (radio chips) ───────────────────────────────
+.pago-group {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: .65rem;
+
+  @media (max-width: 768px) { grid-template-columns: 1fr 1fr; }
+}
+
+.pago-option {
+  display: block;
+  border: 1px solid #d1d5db;
+  border-radius: $radius-sm;
+  padding: .65rem .9rem;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color .12s, background .12s;
+  margin: 0;
+
+  input[type="radio"] { display: none; }
+  &:hover { border-color: #9ca3af; background: #fafbfc; }
+}
+
+.pago-option:has(input[type="radio"]:checked) {
+  border-color: $accent;
+  background: $accent-soft;
+  .pago-label { color: $accent; font-weight: 600; }
+}
+
+.pago-label {
+  font-size: .85rem;
+  font-weight: 500;
+  color: $dark;
+}
+
+// ── Resumen card ───────────────────────────────────────────────
+.resumen-card {
+  border: 1px solid $accent-soft;
+}
+
+.resumen-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: .85rem 1.25rem;
+
+  @media (max-width: 992px) { grid-template-columns: repeat(2, 1fr); }
+
+  > div { display: flex; flex-direction: column; gap: 2px; }
+}
+
+.rs-label {
+  font-size: .68rem;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: #6b7280;
+  font-weight: 600;
+}
+
+.rs-value {
+  font-size: .9rem;
+  color: $dark;
+  font-weight: 500;
+}
+
+.resumen-items {
+  border-top: 1px dashed #e4e9f2;
+  padding-top: .75rem;
+
+  .rs-item {
+    display: flex;
+    justify-content: space-between;
+    padding: .35rem 0;
+    font-size: .85rem;
+    border-bottom: 1px solid #f3f4f7;
+
+    &:last-child { border-bottom: none; }
+  }
+
+  .rs-item-sub { font-weight: 600; color: $dark; }
+}
+
+.resumen-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: .85rem 1rem;
+  background: $accent;
+  border-radius: $radius-sm;
+  color: #fff;
+
+  .rs-total-label {
+    font-size: .75rem;
+    letter-spacing: 1px;
+    font-weight: 600;
+  }
+
+  .rs-total-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -.5px;
+  }
+}
+
+// ── Lista de contenedores por finalizar ────────────────────────
+.por-finalizar-list {
+  border: 1px solid $accent-soft;
+  border-radius: $radius-sm;
+  padding: .65rem;
+  background: #f5f9ff;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.por-finalizar-item {
+  display: flex;
+  align-items: flex-start;
+  gap: .65rem;
+  padding: .6rem .75rem;
+  border-radius: $radius-sm;
+  cursor: pointer;
+  transition: background .12s;
+  margin: 0;
+
+  &:hover { background: rgba($accent, .05); }
+
+  input[type="radio"] { margin-top: 4px; flex-shrink: 0; }
+
+  &:has(input[type="radio"]:checked) {
+    background: rgba($accent, .12);
+    outline: 1px solid $accent;
+  }
+}
+
+.por-finalizar-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: .82rem;
+}
+
+.por-finalizar-num   { font-weight: 700; color: $dark; }
+.por-finalizar-fecha { color: $accent-dark; font-weight: 500; }
+.por-finalizar-dir   { color: #6b7280; font-size: .76rem; }
+
+// ── Alerts modernos ────────────────────────────────────────────
+.alert {
+  border: 1px solid transparent;
+  border-radius: $radius-sm;
+  font-size: .85rem;
+  padding: .7rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+
+  .alert-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  &.alert-success {
+    background: #ecfdf5;
+    border-color: #a7f3d0;
+    color: #065f46;
+    .alert-dot { background: #10b981; }
+  }
+  &.alert-danger {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: #991b1b;
+    .alert-dot { background: $red; }
+  }
+  &.alert-warning {
+    background: #fffbeb;
+    border-color: #fde68a;
+    color: #92400e;
+    .alert-dot { background: $yellow; }
+  }
+}

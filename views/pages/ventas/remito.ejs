@@ -24,7 +24,14 @@
     </div>
     <div class="text-end">
       <h5 class="fw-bold mb-0 remito-title">REMITO</h5>
-      <div class="fw-bold fs-4">OP-<%= String(op.nro_op).padStart(4,'0') %></div>
+      <div class="fw-bold fs-4">
+        <% if (op.nro_remito) { %>
+          0001-<%= String(op.nro_remito).padStart(8, '0') %>
+        <% } else { %>
+          OP-<%= String(op.nro_op).padStart(4,'0') %>
+        <% } %>
+      </div>
+      <small class="text-muted">OP interna: <%= String(op.nro_op).padStart(4,'0') %></small><br>
       <small class="text-muted">Fecha: <%= new Date(op.fecha_emision).toLocaleDateString('es-AR') %></small>
     </div>
   </div>

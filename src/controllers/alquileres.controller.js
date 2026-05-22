@@ -4,16 +4,10 @@ const AlquileresController = {
 
   index(req, res) {
     try {
-      const { estado, id_cliente } = req.query
-      const alquileres = AlquileresModel.listar({ estado, id_cliente })
-      const resumen    = AlquileresModel.contarPorEstado()
-      const clientes   = AlquileresModel.clientes()
+      const grupos = AlquileresModel.listarPorEstado()
       res.render('pages/contenedores/alquileres/index', {
         titulo: 'Alquileres',
-        alquileres,
-        resumen,
-        clientes,
-        filtros: req.query,
+        grupos,
       })
     } catch (err) {
       console.error(err)

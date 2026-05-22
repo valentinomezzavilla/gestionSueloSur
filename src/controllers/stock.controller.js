@@ -15,8 +15,8 @@ const StockController = {
 
   ajustar(req, res) {
     const { id_producto } = req.params
-    const cantidad_actual = parseFloat(req.body.cantidad_actual) || 0
-    const stock_minimo    = parseFloat(req.body.stock_minimo)    || 0
+    const cantidad_actual = parseInt(req.body.cantidad_actual) || 0
+    const stock_minimo    = parseInt(req.body.stock_minimo)    || 0
     try {
       StockModel.ajustar(id_producto, { cantidad_actual, stock_minimo })
       req.flash('success', 'Stock actualizado correctamente.')
@@ -40,7 +40,7 @@ const StockController = {
 
   egreso(req, res) {
     const { id_producto } = req.params
-    const cantidad = parseFloat(req.body.cantidad) || 0
+    const cantidad = parseInt(req.body.cantidad) || 0
     const motivo   = req.body.motivo || ''
     try {
       if (cantidad <= 0) {
@@ -63,7 +63,7 @@ const StockController = {
 
   ingreso(req, res) {
     const { id_producto } = req.params
-    const cantidad = parseFloat(req.body.cantidad) || 0
+    const cantidad = parseInt(req.body.cantidad) || 0
     try {
       if (cantidad <= 0) {
         req.flash('error', 'La cantidad debe ser mayor a cero.')

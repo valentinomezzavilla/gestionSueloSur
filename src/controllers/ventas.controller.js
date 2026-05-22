@@ -33,12 +33,15 @@ const VentasController = {
       const clientes     = VentasModel.listarClientes()
       const productos    = VentasModel.listarProductos()
       const contenedores = ContenedoresModel.disponibles()
+      const porFinalizar = ContenedoresModel.porFinalizar()
       res.render('pages/ventas/nueva', {
         titulo: 'Nueva Operación',
         clientes,
         productos,
         contenedores,
-        productosJson: JSON.stringify(productos),
+        porFinalizar,
+        productosJson:    JSON.stringify(productos),
+        porFinalizarJson: JSON.stringify(porFinalizar),
       })
     } catch (err) {
       console.error(err)
@@ -49,38 +52,74 @@ const VentasController = {
 
   crear(req, res) {
     try {
-      const { id_cliente, tipo_op, observaciones, fecha_entrega_planificada } = req.body
+      const {
+        id_cliente, cliente_texto, tipo_op, modalidad, observaciones,
+        fecha_entrega_planificada, metodo_pago,
+        dom_calle, dom_altura, dom_sin_numero, dom_lat, dom_lng,
+      } = req.body
       const tipo = tipo_op || 'M'
 
-      if (tipo === 'C') {
-        const { domicilio_entrega, zona_entrega, plazo_alquiler, precio_alquiler, id_contenedor } = req.body
-        if (!domicilio_entrega || !zona_entrega) {
-          req.flash('error', 'Debe completar domicilio y zona de entrega.')
+      // Construir el objeto domicilio si aplica
+      const requiereDomicilio = tipo === 'B' || tipo === 'C' || (tipo === 'M' && modalidad === 'flete')
+      let domicilio = null
+      if (requiereDomicilio) {
+        if (!dom_calle?.trim()) {
+          req.flash('error', 'Debe completar la calle del domicilio de entrega.')
           return res.redirect('/ventas/nueva')
         }
-        const { nro_op } = VentasModel.crear({
-          id_cliente,
-          id_administrativo: req.session.user.id,
-          tipo_op: 'C',
-          observaciones: observaciones || '',
-          fecha_entrega_planificada: fecha_entrega_planificada || null,
-          contenedor: {
-            id_contenedor:     id_contenedor || null,
-            domicilio_entrega,
-            zona_entrega,
-            plazo_alquiler:    parseInt(plazo_alquiler) || 5,
-            precio_alquiler:   parseFloat(precio_alquiler) || 0,
-          },
-        })
-        req.flash('success', `Orden de Pedido OP-${String(nro_op).padStart(4, '0')} creada correctamente.`)
-        return res.redirect('/ventas')
+        domicilio = {
+          calle:      dom_calle.trim(),
+          altura:     dom_sin_numero ? null : (dom_altura || null),
+          sin_numero: !!dom_sin_numero,
+          lat:        dom_lat || null,
+          lng:        dom_lng || null,
+        }
       }
 
-      const ids        = [].concat(req.body['id_producto[]']     || [])
-      const cantidades = [].concat(req.body['cantidad_pedida[]'] || [])
-      const precios    = [].concat(req.body['precio_unitario[]'] || [])
+      const opComun = {
+        id_cliente:          id_cliente || null,
+        cliente_nombre_libre: !id_cliente ? cliente_texto : null,
+        id_administrativo:   req.session.user.id,
+        observaciones:       observaciones || '',
+        fecha_entrega_planificada: fecha_entrega_planificada || null,
+        modalidad:           requiereDomicilio ? 'flete' : 'deposito',
+        metodo_pago:         metodo_pago || null,
+        domicilio,
+      }
 
-      if (!ids.length) {
+      if (tipo === 'C') {
+        const { plazo_alquiler, precio_alquiler, id_contenedor, id_contenedor_futuro, zona_entrega } = req.body
+        // Si eligieron un contenedor "por finalizar", ese tiene prioridad
+        const idContFinal = id_contenedor_futuro || id_contenedor
+        // Construir el string de domicilio para compatibilidad con op_detalle_contenedor
+        const domicilioStr = domicilio
+          ? domicilio.sin_numero ? `${domicilio.calle} s/n` : `${domicilio.calle} ${domicilio.altura || ''}`.trim()
+          : ''
+        const { nro_op, nro_remito } = VentasModel.crear({
+          ...opComun,
+          tipo_op: 'C',
+          contenedor: {
+            id_contenedor:    idContFinal || null,
+            domicilio_entrega: domicilioStr,
+            zona_entrega:      zona_entrega || '',
+            plazo_alquiler:    parseInt(plazo_alquiler) || 5,
+            precio_alquiler:   parseInt(precio_alquiler) || 0,
+          },
+        })
+        req.flash('success', `Operación creada — Remito N° ${String(nro_remito).padStart(8, '0')}.`)
+        return res.redirect('/operaciones/ventas-deposito')
+      }
+
+      const getArr = (key) => {
+        const v = req.body[key] ?? req.body[key + '[]']
+        if (v == null) return []
+        return Array.isArray(v) ? v : [v]
+      }
+      const ids        = getArr('id_producto')
+      const cantidades = getArr('cantidad_pedida')
+      const precios    = getArr('precio_unitario')
+
+      if (!ids.length || !ids.some(x => x)) {
         req.flash('error', 'Debe agregar al menos un producto.')
         return res.redirect('/ventas/nueva')
       }
@@ -88,30 +127,27 @@ const VentasController = {
       const detalles = ids
         .map((id_producto, i) => ({
           id_producto,
-          cantidad_pedida: parseFloat(cantidades[i]) || 0,
-          precio_unitario: parseFloat(precios[i])    || 0,
+          cantidad_pedida: parseInt(cantidades[i]) || 0,
+          precio_unitario: parseInt(precios[i])    || 0,
         }))
-        .filter(d => d.cantidad_pedida > 0)
+        .filter(d => d.id_producto && d.cantidad_pedida > 0)
 
       if (!detalles.length) {
         req.flash('error', 'Las cantidades deben ser mayores a cero.')
         return res.redirect('/ventas/nueva')
       }
 
-      const { nro_op } = VentasModel.crear({
-        id_cliente,
-        id_administrativo: req.session.user.id,
+      const { nro_op, nro_remito } = VentasModel.crear({
+        ...opComun,
         tipo_op: tipo,
-        observaciones: observaciones || '',
-        fecha_entrega_planificada: fecha_entrega_planificada || null,
         detalles,
       })
 
-      req.flash('success', `Orden de Pedido OP-${String(nro_op).padStart(4, '0')} creada correctamente.`)
-      res.redirect('/ventas')
+      req.flash('success', `Operación creada — Remito N° ${String(nro_remito).padStart(8, '0')}.`)
+      res.redirect('/operaciones/ventas-deposito')
     } catch (err) {
       console.error(err)
-      req.flash('error', 'Error al crear la orden de pedido.')
+      req.flash('error', 'Error al crear la operación.')
       res.redirect('/ventas/nueva')
     }
   },

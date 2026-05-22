@@ -42,6 +42,48 @@ const AlquileresModel = {
     `).all(...params)
   },
 
+  // 3 tablas para el módulo Contenedores:
+  // - actuales: en curso (op entregada, contenedor en domicilio)
+  // - porFinalizar: actuales cuyo plazo termina mañana o antes
+  // - programados: op pendiente (no despachada todavía)
+  listarPorEstado() {
+    const baseSelect = `
+      SELECT op.id, op.nro_op, op.nro_remito, op.estado, op.fecha_emision, op.fecha_entrega_planificada,
+             cli.nombre AS cliente_nombre, cli.tel_whatsapp,
+             oc.id AS id_op_contenedor, oc.domicilio_entrega, oc.zona_entrega,
+             oc.plazo_alquiler, oc.precio_alquiler, oc.id_contenedor,
+             cont.numero_contenedor,
+             um.estado_paso AS contenedor_estado,
+             um.fecha_movimiento AS fecha_entrega_real,
+             date(substr(um.fecha_movimiento, 1, 10), '+' || oc.plazo_alquiler || ' days') AS fecha_fin_estimada,
+             CAST(julianday(date(substr(um.fecha_movimiento, 1, 10), '+' || oc.plazo_alquiler || ' days')) - julianday('now') AS INTEGER) AS dias_restantes,
+             CAST((julianday('now') - julianday(um.fecha_movimiento)) AS INTEGER) AS dias_en_estado
+      FROM op_encabezado op
+      JOIN clientes cli ON cli.id = op.id_cliente
+      LEFT JOIN op_detalle_contenedor oc ON oc.id_orden_pedido = op.id
+      LEFT JOIN contenedores cont ON cont.id = oc.id_contenedor
+      LEFT JOIN (${SQL_ULTIMO_MOV}) um ON um.id_contenedor = oc.id_contenedor
+      WHERE op.tipo_op = 'C'
+    `
+
+    const actuales = db.prepare(`
+      ${baseSelect}
+        AND op.estado = 'entregado'
+        AND um.estado_paso IN ('entregado','en_alquiler','a_retirar')
+      ORDER BY fecha_fin_estimada ASC
+    `).all()
+
+    const porFinalizar = actuales.filter(a => a.dias_restantes != null && a.dias_restantes <= 1)
+
+    const programados = db.prepare(`
+      ${baseSelect}
+        AND op.estado IN ('pendiente','despachado')
+      ORDER BY op.fecha_entrega_planificada ASC NULLS LAST, op.created_at ASC
+    `).all()
+
+    return { actuales, porFinalizar, programados }
+  },
+
   contarPorEstado() {
     return db.prepare(`
       SELECT estado, COUNT(*) AS total

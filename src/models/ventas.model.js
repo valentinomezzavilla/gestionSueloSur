@@ -99,15 +99,33 @@ const VentasModel = {
     return op
   },
 
-  crear({ id_cliente, id_administrativo, tipo_op = 'M', observaciones = '', detalles, contenedor, fecha_entrega_planificada = null }) {
-    const { nro } = db.prepare(
-      `SELECT COALESCE(MAX(nro_op), 0) + 1 AS nro FROM op_encabezado`
-    ).get()
+  crear({
+    id_cliente, id_administrativo, tipo_op = 'M', observaciones = '',
+    detalles, contenedor, fecha_entrega_planificada = null,
+    modalidad = null, domicilio = null, metodo_pago = null,
+    cliente_nombre_libre = null,
+  }) {
+    // Si el cliente vino como texto libre (no existe en la BD), crearlo automáticamente
+    if (!id_cliente && cliente_nombre_libre) {
+      const nuevoId = crypto.randomUUID()
+      db.prepare(`
+        INSERT INTO clientes (id, nombre, activo) VALUES (?, ?, 1)
+      `).run(nuevoId, cliente_nombre_libre.trim())
+      id_cliente = nuevoId
+    }
+
+    const { nro }     = db.prepare(`SELECT COALESCE(MAX(nro_op), 0) + 1 AS nro FROM op_encabezado`).get()
+    const { nro_rem } = db.prepare(`SELECT COALESCE(MAX(nro_remito), 0) + 1 AS nro_rem FROM op_encabezado`).get()
     const id = crypto.randomUUID()
 
+    const dom = domicilio || {}
+
     const insertOP = db.prepare(`
-      INSERT INTO op_encabezado (id, id_cliente, id_administrativo, tipo_op, nro_op, estado, observaciones, fecha_entrega_planificada)
-      VALUES (?, ?, ?, ?, ?, 'pendiente', ?, ?)
+      INSERT INTO op_encabezado (
+        id, id_cliente, id_administrativo, tipo_op, nro_op, nro_remito, estado,
+        observaciones, fecha_entrega_planificada, modalidad, metodo_pago,
+        domicilio_calle, domicilio_altura, domicilio_sin_numero, domicilio_lat, domicilio_lng
+      ) VALUES (?, ?, ?, ?, ?, ?, 'pendiente', ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `)
     const insertDetalle = db.prepare(`
       INSERT INTO op_detalle_material (id, id_orden_pedido, id_producto, cantidad_pedida, precio_unitario)
@@ -124,7 +142,15 @@ const VentasModel = {
     `)
 
     db.transaction(() => {
-      insertOP.run(id, id_cliente, id_administrativo, tipo_op, nro, observaciones, fecha_entrega_planificada || null)
+      insertOP.run(
+        id, id_cliente, id_administrativo, tipo_op, nro, nro_rem,
+        observaciones, fecha_entrega_planificada || null, modalidad, metodo_pago,
+        dom.calle || null,
+        dom.altura != null && dom.altura !== '' ? parseInt(dom.altura) : null,
+        dom.sin_numero ? 1 : 0,
+        dom.lat != null && dom.lat !== '' ? parseFloat(dom.lat) : null,
+        dom.lng != null && dom.lng !== '' ? parseFloat(dom.lng) : null,
+      )
 
       if (tipo_op === 'C' && contenedor) {
         insertContenedor.run(
@@ -141,7 +167,7 @@ const VentasModel = {
       }
     })()
 
-    return { id, nro_op: nro }
+    return { id, nro_op: nro, nro_remito: nro_rem }
   },
 
   despachar(id) {
